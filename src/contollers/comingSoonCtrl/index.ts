@@ -26,10 +26,11 @@ const comingSoonCtrl = {
   
   getAllComingSoonMsg: async (req: Request, res: Response) => {
     try {
-      const comingSoonMsgs = await ComingSoon.find();
+      const comingSoonMsgs = await ComingSoon.find().sort({createdAt: -1});
 
       return res.status(200).json({
         message: "Successful",
+        count: comingSoonMsgs.length,
         waitlist: comingSoonMsgs,
       });
     } catch (err: any) {
