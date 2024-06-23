@@ -1,8 +1,10 @@
 
 import comingSoonRoutes from "./comingSoonRoutes"
+import authRoutes from "./authRoutes"
 
 const routes = [
-    comingSoonRoutes
+    comingSoonRoutes,
+    authRoutes
 
 ]
 

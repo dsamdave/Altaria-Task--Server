@@ -3,6 +3,10 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import routes from "../routes";
+import passport from 'passport';
+
+// Import the passport configuration
+import '../config/passport';
 
 export default async (app: Application) => {
   // Middleware
@@ -13,6 +17,7 @@ export default async (app: Application) => {
   app.use(cors());
   app.use(morgan("dev"));
   app.use(cookieParser());
+  app.use(passport.initialize());
 
   app.use((request: Request, response: Response, next: NextFunction) => {
     response.header("Access-Control-Allow-Origin", "*");
