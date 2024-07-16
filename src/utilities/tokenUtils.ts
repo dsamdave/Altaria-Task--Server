@@ -58,5 +58,6 @@ export const generateTokens = async (
 };
 
 export const generateOTP = () => {
-  return crypto.randomBytes(3).toString("hex");
+  const otp = Math.floor(1000 + Math.random() * 9000); 
+  return otp.toString();
 };

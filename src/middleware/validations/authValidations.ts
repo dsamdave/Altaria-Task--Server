@@ -35,8 +35,6 @@ export const validateRegister = async (
 };
 
 
-
-
 export const validateLogin = async (req: Request, res: Response, next: NextFunction) => {
     const { identifier, password } = req.body
   
@@ -105,8 +103,6 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
   }
 
 
-
-
   export const validateDeleteUserAccount = async (req: Request, res: Response, next: NextFunction) => {
 
     const { deletePhrase } = req.body
@@ -123,8 +119,6 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
   
     next();
   }
-
-
 
 
 

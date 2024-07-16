@@ -165,9 +165,11 @@ const authCtrl = {
         await sendOTPSMS(user.phoneNumber, otp);
       }
 
-      res.status(200).json({ message: "Successful" });
-    } catch (err) {
-      next(err);
+      res.status(200).json({ message: "Successful", otp });
+
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
     }
   },
 
@@ -200,6 +202,7 @@ const authCtrl = {
       }
 
       res.status(200).json({ message: "Successful", otp });
+      
     } catch (err) {
       next(err);
     }
@@ -330,7 +333,6 @@ const authCtrl = {
         application: updatedApplication,
       });
 
-      return res.status(404).json({ message: "User application not found" });
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
