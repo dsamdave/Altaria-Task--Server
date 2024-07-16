@@ -114,7 +114,6 @@ const doctorInfoSchema: Schema = new Schema({
 const UserSchema: Schema = new Schema({
   email: {
     type: String,
-    unique: true,
     default: null
   },
   phoneNumber: {
