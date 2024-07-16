@@ -43,7 +43,7 @@ const authCtrl = {
         user,
       });
     } catch (err: any) {
-      res.status(500).json({ message: "Server error.", error: err.message });
+      res.status(500).json({ message: err.message });
     }
   },
 
