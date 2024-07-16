@@ -39,7 +39,7 @@ const authCtrl = {
       await user.save();
 
       res.status(201).json({
-        message: "Successful.",
+        message: "Successful",
         user,
       });
     } catch (err: any) {
@@ -241,7 +241,7 @@ const authCtrl = {
       await OTP.deleteOne({ _id: otpRecord._id });
 
       res.status(201).json({
-        message: "Successful.",
+        message: "Successful",
         user,
       });
     } catch (err: any) {
