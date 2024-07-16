@@ -10,28 +10,14 @@ import '../config/passport';
 
 export default async (app: Application) => {
   // Middleware
+  app.use(cors()); // Enable CORS for all origins
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
-  app.use(cors());
   app.use(morgan("dev"));
   app.use(cookieParser());
   app.use(passport.initialize());
-
-  app.use((request: Request, response: Response, next: NextFunction) => {
-    response.header("Access-Control-Allow-Origin", "*");
-    response.header(
-      "Access-Control-Allow-Methods",
-      "PUT, GET, POST, DELETE, OPTIONS"
-    );
-    response.header("Access-Control-Allow-Credentials", "true");
-    response.header(
-      "Access-Control-Allow-Headers",
-      "Origin, X-Requested-With, Content-Type, Accept, Methods, Credentials"
-    );
-    next();
-  });
 
   // Routes
   app.use("/api", routes);
@@ -43,10 +29,9 @@ export default async (app: Application) => {
     });
   });
 
-  app.use((request: Request, response: Response, next: NextFunction) => {
-    response
-      .status(404)
-      .json({ message: "Sorry, this endpoint does not exist yet!" });
+  // 404 Error handler
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    res.status(404).json({ message: "Sorry, this endpoint does not exist yet!" });
   });
 
   return app;

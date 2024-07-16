@@ -14,24 +14,32 @@ import { jayDoubleUUTeeCCkrit } from "../../config/vars";
 import { IReqAuth } from "../../types/express";
 import { generateOTP, generateTokens } from "../../utilities/tokenUtils";
 import { sendOTPEMail, sendOTPSMS } from "../../utilities/notificationUtility";
+import { hashPassword } from "../../utilities/passwordUtility";
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
-    const { email, phoneNumber, password } = req.body;
+
+    console.log("got here")
+    const { email, phoneNumber, password, country, state, fullName } = req.body;
     try {
       const existingUser = await Users.findOne({
-        $or: [{ email }, { phoneNumber }],
-      });
+        $or: [
+          // { email }, 
+          { phoneNumber }],
+      });  
       if (existingUser) {
         return res
           .status(400)
           .json({ message: "User account already exists." });
       }
-      const user: IUser = new Users({ email, phoneNumber, password });
+
+      const hashedPassword = await hashPassword(password, 12)
+
+      const user: IUser = new Users({ email, phoneNumber, password: hashedPassword, country, state, fullName });
       await user.save();
 
       res.status(201).json({
-        message: "User registered successfully.",
+        message: "Successful.",
         user,
       });
     } catch (err: any) {
@@ -39,35 +47,42 @@ const authCtrl = {
     }
   },
 
-  login: async (req: Request, res: Response, next: NextFunction) => {
-    passport.authenticate(
-      "local",
-      { session: false },
-      async (err: any, user: IUser | false, info: any) => {
-        if (err) {
-          return next(err);
-        }
-        if (!user) {
-          return res
-            .status(400)
-            .json({ message: info ? info.message : "Login failed.", user });
-        }
 
-        const { accessToken, refreshToken } = await generateTokens(
-          user,
-          res,
-          req.body.isMobile
-        );
 
-        if (req.body.isMobile) {
-          res
-            .status(200)
-            .json({ message: "Successful", accessToken, refreshToken, user });
-        } else {
-          res.status(200).json({ message: "Successful" });
-        }
-      }
-    )(req, res, next);
+  login: async (req: IReqAuth, res: Response) => {
+    try {
+      const { identifier, password } = req.body;
+
+      const user = await Users.findOne({
+        $or: [{ email: identifier }, { phoneNumber: identifier }],
+      });
+
+      if (!user)
+        return res
+          .status(404)
+          .json({ message: "This user account does not exist." });
+
+    
+
+      const passwordMatch = await bcrypt.compare(password, user.password);
+
+      if (!passwordMatch)
+        return res.status(400).json({ message: "invalid email or password!" });
+
+      const { accessToken, refreshToken } = await generateTokens(
+        user,
+        res,
+      );
+
+      return res.status(200).json({
+        message: "Successful",
+        accessToken,
+        refreshToken,
+        user,
+      });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
   },
 
   refreshToken: async (req: IReqAuth, res: Response, next: NextFunction) => {
@@ -94,16 +109,28 @@ const authCtrl = {
       }
 
       const { accessToken, refreshToken: newRefreshToken } =
-        await generateTokens(user, res, !!req.body.isMobile );
+        await generateTokens(user, res );
 
       existingToken.token = newRefreshToken;
       existingToken.expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       await existingToken.save();
 
       if (req.body.isMobile) {
-        res.status(200).json({message: "Successful", accessToken, refreshToken: newRefreshToken });
+        res
+          .status(200)
+          .json({
+            message: "Successful",
+            accessToken,
+            refreshToken: newRefreshToken,
+          });
       } else {
-        res.status(200).json({message: "Successful", accessToken, refreshToken: newRefreshToken });
+        res
+          .status(200)
+          .json({
+            message: "Successful",
+            accessToken,
+            refreshToken: newRefreshToken,
+          });
       }
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });
@@ -138,7 +165,41 @@ const authCtrl = {
         await sendOTPSMS(user.phoneNumber, otp);
       }
 
-      res.status(200).json({ message: "OTP sent successfully." });
+      res.status(200).json({ message: "Successful" });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  forgotPassword: async (req: IReqAuth, res: Response, next: NextFunction) => {
+    try {
+      const { identifier } = req.body;
+      const user: IUser | null = await Users.findOne({
+        $or: [{ email: identifier }, { phoneNumber: identifier }],
+      });
+
+      if (!user) {
+        return res.status(400).json({ message: "User not found." });
+      }
+
+      const otp = generateOTP();
+      const expiryDate = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+      await new OTP({
+        userID: user._id,
+        otp,
+        expiryDate,
+      }).save();
+
+      if (user.email === identifier) {
+        // Send OTP via email
+        await sendOTPEMail(user.email, otp);
+      } else if (user.phoneNumber === identifier) {
+        // Send OTP via SMS
+        await sendOTPSMS(user.phoneNumber, otp);
+      }
+
+      res.status(200).json({ message: "Successful", otp });
     } catch (err) {
       next(err);
     }
@@ -150,7 +211,7 @@ const authCtrl = {
     next: NextFunction
   ) => {
     try {
-      const { identifier, otp, newPassword } = req.body;
+      const { identifier, otp, password } = req.body;
 
       const user: IUser | null = await Users.findOne({
         $or: [{ email: identifier }, { phoneNumber: identifier }],
@@ -174,7 +235,7 @@ const authCtrl = {
           .json({ message: "OTP is invalid or has expired." });
       }
       const salt = await bcrypt.genSalt(12);
-      user.password = await bcrypt.hash(newPassword, salt);
+      user.password = await bcrypt.hash(password, salt);
 
       await user.save();
       await OTP.deleteOne({ _id: otpRecord._id });
@@ -211,6 +272,67 @@ const authCtrl = {
       });
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });
+    }
+  },
+
+  updateBasicInfo: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.user)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const loggedInUser = req.user;
+
+      const {
+        fullName,
+        birthDate,
+        gender,
+        languages,
+
+        email,
+        emergencyPhoneNumber,
+        address,
+        avatar,
+        name,
+        contactEmergencyPhoneNumber,
+        relationship,
+      } = req.body;
+
+      const updatedApplication = await Users.findOneAndUpdate(
+        {
+          $or: [
+            { email: loggedInUser.email },
+            { phoneNumber: loggedInUser.phoneNumber },
+          ],
+        },
+        {
+          basicInformation: {
+            birthDate,
+            gender,
+            languages,
+            contactInfo: {
+              email,
+              emergencyPhoneNumber,
+              address,
+            },
+            emergencyContact: {
+              name,
+              contactEmergencyPhoneNumber,
+              relationship,
+            },
+            avatar
+          },
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Successful",
+        application: updatedApplication,
+      });
+
+      return res.status(404).json({ message: "User application not found" });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
     }
   },
 };

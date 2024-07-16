@@ -12,6 +12,7 @@ const auth = async (req: IReqAuth, res: Response, next: NextFunction) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; role: string };
+
     const user = await Users.findById(decoded.id);
 
     if (!user) {

@@ -4,5 +4,6 @@ import { IUser } from '../models/User';
 export interface IReqAuth extends Request {
   user?: IUser;
   admin?: IUser;
+  doctor?: IUser;
   role?: string;
 }

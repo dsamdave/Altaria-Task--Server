@@ -9,11 +9,11 @@ export const validateRegister = async (
 
   const errors = [];
 
-  if (!email) {
-    errors.push("Please enter your email.");
-  } else if (!validEmail(email)) {
-    errors.push("Email format is incorrect.");
-  }
+  // if (!email) {
+  //   errors.push("Please enter your email.");
+  // } else if (!validEmail(email)) {
+  //   errors.push("Email format is incorrect.");
+  // }
 
   if (!phoneNumber) {
     errors.push("Please enter your phone number.");
@@ -63,9 +63,16 @@ export const validateResetPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { password } = req.body;
+  const { identifier, otp, password } = req.body;
 
   const errors = [];
+
+  if(!identifier){
+    errors.push("Please enter your email or phone number.")
+  }
+  if(!otp){
+    errors.push("Please enter OTP.")
+  }
 
   if (!password) {
     errors.push("Please enter a password.");
@@ -84,14 +91,12 @@ export const validateResetPassword = async (
 
 
 export const validateForgotPassword = async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body
+    const { identifier } = req.body
   
     const errors = [];
   
-    if(!email){
-      errors.push("Please enter your email.")
-    }else if(!validEmail(email)){
-      errors.push("Email format is incorrect.")
+    if(!identifier){
+      errors.push("Please enter your email or phone number.")
     }
   
     if(errors.length > 0) return res.status(400).json({message: errors})
