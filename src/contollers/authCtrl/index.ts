@@ -202,9 +202,50 @@ const authCtrl = {
       }
 
       res.status(200).json({ message: "Successful", otp });
-      
+
     } catch (err) {
       next(err);
+    }
+  },
+
+  verifyOTP: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { identifier, otp } = req.body;
+
+      const user: IUser | null = await Users.findOne({
+        $or: [{ email: identifier }, { phoneNumber: identifier }],
+      });
+
+      if (!user) {
+        return res
+          .status(400)
+          .json({ message: "User account does not exist." });
+      }
+
+      const otpRecord = await OTP.findOne({
+        userID: user._id,
+        otp,
+        expiryDate: { $gt: Date.now() },
+      });
+
+      if (!otpRecord) {
+        return res
+          .status(400)
+          .json({ message: "OTP is invalid or has expired." });
+      }
+
+      await OTP.deleteOne({ _id: otpRecord._id });
+
+      res.status(201).json({
+        message: "Successful",
+        user,
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: "Server error.", error: err.message });
     }
   },
 

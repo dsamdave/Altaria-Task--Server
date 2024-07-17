@@ -13,7 +13,7 @@ router.post('/login', validateLogin, authCtrl.login)
 
 router.post('/refresh-token', authCtrl.refreshToken)
 
-router.get('/e', auth, authCtrl.example)
+router.post('/verify-OTP', authCtrl.verifyOTP)
 
 router.post('/forgot-password', validateForgotPassword, authCtrl.forgotPassword)
 
