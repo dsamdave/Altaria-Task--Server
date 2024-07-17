@@ -61,25 +61,19 @@ export const validateResetPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { identifier, otp, password } = req.body;
+  const { identifier, password } = req.body;
 
   const errors = [];
 
   if(!identifier){
     errors.push("Please enter your email or phone number.")
   }
-  if(!otp){
-    errors.push("Please enter OTP.")
-  }
+
 
   if (!password) {
     errors.push("Please enter a password.");
   } else if (password.length < 6) {
     errors.push("Please password must be 6 chars.");
-  } else if (!/[A-Z]/.test(password)) {
-    errors.push("Please password must contain a capital letter");
-  } else if (!/[0-9]/.test(password)) {
-    errors.push("Please password must contain a number");
   }
 
   if (errors.length > 0) return res.status(400).json({ message: errors });

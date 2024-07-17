@@ -255,7 +255,7 @@ const authCtrl = {
     next: NextFunction
   ) => {
     try {
-      const { identifier, otp, password } = req.body;
+      const { identifier, password } = req.body;
 
       const user: IUser | null = await Users.findOne({
         $or: [{ email: identifier }, { phoneNumber: identifier }],
@@ -267,22 +267,9 @@ const authCtrl = {
           .json({ message: "User account does not exist." });
       }
 
-      const otpRecord = await OTP.findOne({
-        userID: user._id,
-        otp,
-        expiryDate: { $gt: Date.now() },
-      });
-
-      if (!otpRecord) {
-        return res
-          .status(400)
-          .json({ message: "OTP is invalid or has expired." });
-      }
-      const salt = await bcrypt.genSalt(12);
-      user.password = await bcrypt.hash(password, salt);
+      user.password = await hashPassword(password, 12)
 
       await user.save();
-      await OTP.deleteOne({ _id: otpRecord._id });
 
       res.status(201).json({
         message: "Successful",
