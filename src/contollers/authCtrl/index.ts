@@ -67,7 +67,7 @@ const authCtrl = {
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordMatch)
-        return res.status(400).json({ message: "invalid email or password!" });
+        return res.status(400).json({ message: "invalid phone number or password!" });
 
       const { accessToken, refreshToken } = await generateTokens(
         user,
