@@ -20,7 +20,7 @@ const authCtrl = {
   register: async (req: Request, res: Response) => {
 
     console.log("got here")
-    const { email, phoneNumber, password, country, state, fullName } = req.body;
+    const { email, phoneNumber, password, country, state, firstName, lastName } = req.body;
     try {
       const existingUser = await Users.findOne({
         $or: [
@@ -35,7 +35,7 @@ const authCtrl = {
 
       const hashedPassword = await hashPassword(password, 12)
 
-      const user: IUser = new Users({ email, phoneNumber, password: hashedPassword, country, state, fullName });
+      const user: IUser = new Users({ email, phoneNumber, password: hashedPassword, country, state, firstName, lastName });
       await user.save();
 
       res.status(201).json({
@@ -314,7 +314,7 @@ const authCtrl = {
       const loggedInUser = req.user;
 
       const {
-        fullName,
+        firstName, lastName,
         birthDate,
         gender,
         languages,
@@ -336,6 +336,7 @@ const authCtrl = {
           ],
         },
         {
+          firstName, lastName,
           basicInformation: {
             birthDate,
             gender,

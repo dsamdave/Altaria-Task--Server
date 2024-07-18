@@ -7,7 +7,8 @@ export interface IUser extends Document {
   phoneNumber: string;
   password: string;
   role: string;
-  fullName: string
+  firstName: string
+  lastName: string
   country: string
   state: string
 
@@ -129,7 +130,8 @@ const UserSchema: Schema = new Schema({
     type: String,
     default: "user", 
   },
-  fullName: stringDefault,
+  firstName: stringDefault,
+  lastName: stringDefault,
   country: stringDefault,
   state: stringDefault,
 
