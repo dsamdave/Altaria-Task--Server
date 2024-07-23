@@ -11,9 +11,9 @@ export interface IUser extends Document {
   lastName: string
   country: string
   state: string
+  avatar: string
 
   basicInformation: {
-    avatar: string
     // fullName: string
     birthDate: string
     gender: string
@@ -62,10 +62,7 @@ const basicInfoSchema: Schema = new Schema({
     contactEmergencyPhoneNumber: stringDefault,
     relationship: stringDefault,
   },
-  avatar: {
-    type: String,
-    default: 'https://res.cloudinary.com/virtualsavvyng/image/upload/v1681556292/realties/user1_xhiugc.png'
-},
+
 },{
     toJSON: {
         transform(document, returnedObject) {
@@ -138,7 +135,12 @@ const UserSchema: Schema = new Schema({
 
   basicInformation : basicInfoSchema,
 
-  doctorInfo: doctorInfoSchema
+  doctorInfo: doctorInfoSchema,
+
+  avatar: {
+    type: String,
+    default: 'https://res.cloudinary.com/virtualsavvyng/image/upload/v1681556292/realties/user1_xhiugc.png'
+},
 
 
 },{
