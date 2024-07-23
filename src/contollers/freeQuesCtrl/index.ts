@@ -132,6 +132,7 @@ const quesAnswerCtrl = {
         conditionName,
         conditionTime,
         optionalNote,
+        currentlyHaveThisCondition,
 
         firstName,
         lastName,
@@ -150,6 +151,7 @@ const quesAnswerCtrl = {
           conditionName,
           conditionTime,
           optionalNote,
+          currentlyHaveThisCondition
         },
 
         someoneElse: {

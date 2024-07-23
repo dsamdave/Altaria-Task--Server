@@ -14,6 +14,7 @@ interface IFreeHealthQues extends Document {
     condition: {
         conditionName: string
         conditionTime: string
+        currentlyHaveThisCondition: boolean
         optionalNote: string
     }
 
@@ -43,13 +44,14 @@ const FreeHealthQuesSchema: Schema = new Schema({
         conditionName: stringDefault,
         conditionTime: stringDefault,
         optionalNote: stringDefault,
+        currentlyHaveThisCondition: {type: Boolean, default: false}
     },
 
     someoneElse: {
         firstName: stringDefault,
         lastName: stringDefault,
         relationship: stringDefault,
-        dateOfBirth: { type: Date, default: null },
+        dateOfBirth: stringDefault,
     }, 
 
     answers: [{ type: Schema.Types.ObjectId, ref: 'answer' }]
