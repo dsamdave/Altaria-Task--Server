@@ -1,20 +1,70 @@
 import { Request, response, Response, NextFunction } from "express";
 import { IReqAuth } from "../../types/express";
-import { pagination } from "../../utilities/utils";
+import { checkPatientType, pagination } from "../../utilities/utils";
+// import Appointments from "../../models/appointment";
+import Users from "../../models/userModel";
 import Appointments from "../../models/appointment";
 
-
-
 const appointmentCtrl = {
-
   getAllAppointments: async (req: IReqAuth, res: Response) => {
     try {
-      if (!req.admin && !req.user)
-        return res.status(401).json({ message: "Invalid Authentication." });
+      if (!req.admin && !req.user && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication."});
 
       const { limit, skip, page } = pagination(req);
 
       const appointments = await Appointments.find()
+        .limit(limit)
+        .skip(skip)
+        .sort({ createdAt: -1 })
+        .populate("user");
+
+      return res.status(200).json({
+        message: "Successful",
+        page,
+        count: appointments.length,
+        appointments,
+      });
+    } catch (err: any) {
+      return res
+        .status(500)
+        .json({ message: "Error retrieving appointments", error: err.message });
+    }
+  },
+  getOneAppointment: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.admin && !req.user && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const appointment = await Appointments.findById(req.params.id).populate("user")
+
+      if (!appointment) {
+        return res.status(404).json({ message: "Appointment not found" });
+      } else {
+        return res.status(200).json({
+          message: "Successful",
+          appointment,
+        });
+      }
+    } catch (err: any) {
+      return res
+        .status(500)
+        .json({ message: "Error retrieving appointment", error: err.message });
+    }
+  },
+  getUserAppointments: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.user)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const { limit, skip, page } = pagination(req);
+
+      const appointments = await Appointments.find({
+        $or: [
+          { user: req.user.id },
+          { patientID: req.user.patientID },
+        ],
+      })
         .limit(limit)
         .skip(skip)
         .sort({ createdAt: -1 });
@@ -28,51 +78,6 @@ const appointmentCtrl = {
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
-    
-  },
-  getOneAppointment: async (req: IReqAuth, res: Response) => {
-    try {
-      if (!req.user && !req.admin)
-        return res.status(401).json({ message: "Invalid Authentication." });
-
-      const { id} = req.params;
-
-      const appointment = await Appointments.findById(id)
-
-      return res.status(200).json({
-        message: "Successful",
-        appointment
-      })
-
-    } catch (err: any) {
-      return res.status(500).json({ message: err.message });
-    }
-
-  },
-  getUserAppointments: async (req: IReqAuth, res: Response) => {
-    try {
-      if (!req.user)
-        return res.status(401).json({ message: "Invalid Authentication." });
-
-      const { limit, skip, page } = pagination(req);
-
-      const appointments = await Appointments.find({
-        $or: [{ patientEmail: req.user.email }, { patientPhoneNumber: req.user.phoneNumber }],
-      }).limit(limit)
-      .skip(skip)
-      .sort({ createdAt: -1 });
-
-      return res.status(200).json({
-        message: "Successful",
-        page,
-        count: appointments.length,
-        appointments,
-      })
-
-    } catch (err: any) {
-      return res.status(500).json({ message: err.message });
-    }
-
   },
 
   bookAppointment: async (req: IReqAuth, res: Response) => {
@@ -80,29 +85,162 @@ const appointmentCtrl = {
       if (!req.user)
         return res.status(401).json({ message: "Invalid Authentication." });
 
-      const {     doctor,
-        patientName,
-        patientEmail,
-        patientPhoneNumber,
-        appointmentDate,
-        reason, } = req.body;
+      const { id, patientID } = req.user;
 
-      const appointment = await Appointments.create({ doctor,
-        patientName,
-        patientEmail,
-        patientPhoneNumber,
-        appointmentDate,
-        reason })
+      const patientType = await checkPatientType(id);
+
+      const savedAppointment = new Appointments({ ...req.body, patientType, user: id, patientID });
+      await savedAppointment.save();
+
+      await Users.findByIdAndUpdate(id, {
+        $push: { "patientInfo.appointments": savedAppointment._id },
+      });
 
       return res.status(200).json({
         message: "Successful",
-        appointment,
-      })
-
+        appointment: savedAppointment,
+      });
     } catch (err: any) {
-      return res.status(500).json({ message: err.message });
+      return res
+        .status(500)
+        .json({ message: "Error booking appointment", error: err.message });
     }
+  },
 
+  acceptAppointment: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if (!req.admin && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      console.log(req.admin, req.moderator, req.doctor)
+
+      const appointment = await Appointments.findByIdAndUpdate(
+        req.params.id,
+        { status: "Accepted" },
+        { new: true }
+      );
+
+      res.status(201).json({
+        message: "Successful",
+        appointment,
+      });
+    } catch (err: any) {
+      res
+        .status(500)
+        .json({ message: "Error accepting appointment", error: err.message });
+    }
+  },
+
+  declineAppointment: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if (!req.admin && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const appointment = await Appointments.findByIdAndUpdate(
+        req.params.id,
+        { status: "Declined" },
+        { new: true }
+      );
+
+      res.status(201).json({
+        message: "Successful",
+        appointment,
+      });
+    } catch (err: any) {
+      res
+        .status(500)
+        .json({ message: "Error declining appointment", error: err.message });
+    }
+  },
+
+  getAppointmentsByStatus: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { status } = req.params;
+
+      const validStatuses = ["Pending", "Accepted", "Declined", "Concluded"];
+
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ message: "Invalid status provided" });
+      }
+
+      const appointments = await Appointments.find({ status });
+
+      res.status(201).json({
+        message: "Successful",
+        appointments,
+      });
+    } catch (err: any) {
+      res
+        .status(500)
+        .json({
+          message: `Error retrieving ${status.toLowerCase()} appointments`,
+          error: err.message,
+        });
+    }
+  },
+
+  deleteAppointment: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      if (!req.admin && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      await Appointments.findByIdAndDelete(req.params.id);
+
+      res.status(201).json({
+        message: "Successful",
+      });
+    } catch (err: any) {
+      res
+        .status(500)
+        .json({ message: "Error deleting appointment", error: err.message });
+    }
+  },
+
+  updateAppointmentStatus: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { status } = req.body;
+
+      if (!["Pending", "Accepted", "Declined", "Concluded"].includes(status)) {
+        return res.status(400).json({ message: "Invalid status provided" });
+      }
+
+      const appointment = await Appointments.findByIdAndUpdate(
+        req.params.id,
+        { status },
+        { new: true }
+      );
+
+      if (!appointment) {
+        res.status(404).json({ message: "Appointment not found" });
+      } else {
+        res.status(201).json({
+          message: "Successful",
+          appointment,
+        });
+      }
+    } catch (err: any) {
+      res.status(500).json({ message: "Server error.", error: err.message });
+    }
   },
 
   example: async (req: IReqAuth, res: Response, next: NextFunction) => {
@@ -110,7 +248,7 @@ const appointmentCtrl = {
       const { user } = req;
 
       res.status(201).json({
-        message: "User registered successfully.",
+        message: "Successful",
         user,
       });
     } catch (err: any) {
@@ -119,5 +257,4 @@ const appointmentCtrl = {
   },
 };
 
-
-export default appointmentCtrl
+export default appointmentCtrl;

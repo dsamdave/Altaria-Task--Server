@@ -5,5 +5,6 @@ export interface IReqAuth extends Request {
   user?: IUser;
   admin?: IUser;
   doctor?: IUser;
+  moderator?: IUser;
   role?: string;
 }

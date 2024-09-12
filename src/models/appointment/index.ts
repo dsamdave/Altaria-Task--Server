@@ -1,31 +1,46 @@
+import { Schema, model, Document } from "mongoose";
 
-
-import mongoose, { Schema, Document } from 'mongoose';
-import { stringDefault } from '../../types/schemaTypes';
-
-
+// Define the interface
 interface IAppointment extends Document {
-    doctor: mongoose.Types.ObjectId;
-    patientName: string;
-    patientEmail: string;
-    patientPhoneNumber: string;
-    appointmentDate: Date;
-    reason: string;
+  user: Schema.Types.ObjectId;
+  patientID: string;
+
+  category: string;
+  patientName: string;
+  reason: string;
+
+  date: Date;
+  time: string;
+
+  patientType: string;
+
+  status: "Pending" | "Accepted" | "Declined" | "Concluded";
 }
 
+// Define the schema
+const appointmentSchema = new Schema<IAppointment>(
+  {
+    category: { type: String, required: true },
+    patientName: { type: String },
+    reason: { type: String, required: true },
 
+    user: { type: Schema.Types.ObjectId, ref: "user", required: true },
+    patientID: { type: String },
 
-const AppointmentSchema: Schema = new Schema({
-    doctor: { type: mongoose.Types.ObjectId, ref: 'user', required: true },
-    patientName: stringDefault,
-    patientEmail: stringDefault,
-    patientPhoneNumber: stringDefault,
-    appointmentDate: { type: Date, required: true },
-    reason: stringDefault
-},{
+    date: { type: Date, required: true },
+    time: { type: String, required: true },
+
+    patientType: { type: String, required: true },
+
+    status: {
+      type: String,
+      enum: ["Pending", "Accepted", "Declined", "Concluded"],
+      default: "Pending",
+    },
+  },{
     toJSON: {
         transform(document, returnedObject) {
-            returnedObject.id = returnedObject._id.toString()
+          returnedObject.id = returnedObject._id.toString();
             delete returnedObject.__v;
             delete returnedObject._id;
 
@@ -34,9 +49,6 @@ const AppointmentSchema: Schema = new Schema({
     timestamps:true
 });
 
-
-
-
-const Appointment = mongoose.model<IAppointment>('appointment', AppointmentSchema);
+const Appointment = model<IAppointment>("appointment", appointmentSchema);
 
 export default Appointment;

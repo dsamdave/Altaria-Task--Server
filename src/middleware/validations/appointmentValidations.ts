@@ -11,22 +11,27 @@ export const validateBookingAppointment = async (
     patientName,
     patientEmail,
     patientPhoneNumber,
-    appointmentDate,
+    date,
+    time,
     reason, 
+    category
  } = req.body;
 
-  const errors = [];
+  const errors = []; 
 
-  if (!doctor) {
-    errors.push("Please enter doctor ID.");
+  if (!category) {
+    errors.push("Please enter appointment category.");
   } 
 
-  if (!patientName) {
+  if(category.toLowerCase() === "someone" && !patientName) {
     errors.push("Please enter patient name.");
   } 
 
-  if (!appointmentDate) {
-    errors.push("Please enter a password.");
+  if (!date) {
+    errors.push("Please enter appointment date.");
+  } 
+  if (!time) {
+    errors.push("Please enter appointment time.");
   } 
 
   if (errors.length > 0) return res.status(400).json({ message: errors });

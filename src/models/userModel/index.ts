@@ -3,33 +3,120 @@ import bcrypt from 'bcryptjs';
 import { numberDefault, stringDefault } from '../../types/schemaTypes';
 
 export interface IUser extends Document {
-  email: string;
+  patientID: string;
   phoneNumber: string;
   password: string;
+
   role: string;
   firstName: string
   lastName: string
+  middleName: string
+
   country: string
   state: string
   avatar: string
 
-  basicInformation: {
-    // fullName: string
-    birthDate: string
-    gender: string
-    languages: string[]
-    contactInfo: {
-      email: string
-      emergencyPhoneNumber: string
-      address: string
-    }
-    emergencyContact: {
-      name: string
-      contactEmergencyPhoneNumber: string
-      relationship: string
-    }
-  }
 
+  patientInfo: {
+
+    appointments: Schema.Types.ObjectId[];
+
+    basicInformation: {
+      // fullName: string
+      dateOfBirth: string
+      gender: string
+      languages: string[]
+      contactInfo: {
+        email: string
+        zipCode: string
+        phoneNumber: string
+        address: string
+      }
+      emergencyContact: {
+        name: string
+        zipCode: string
+        contactEmergencyPhoneNumber: string
+        relationship: string
+      }
+    }
+  
+    healthMetrics: {
+      basic: {
+        height: string
+        weight: string
+        bodyMass: string
+        bloodGroup: string
+  
+      }
+  
+      advancedIfo: {
+        bloodPressure: string
+        totalCholesterol: string
+        LDL: string
+        HDL: string
+        triglycerides: string
+        cholesterolHDLRatio: string
+        glucose: string
+  
+      }
+    }
+  
+    conditions: {
+      name: string
+      dateAdded: string
+      diagnozedBy: string
+      description: string
+    }[]
+
+    treatmentHistory: {
+      name: string
+      dateAdded: string
+      diagnozedBy: string
+      description: string
+    }[]
+
+    medications: {
+      generalMedication: {
+        name: string
+        dosage: string
+
+      }[]
+      advancedMedication: {
+        name: string
+        dosage: string
+
+      }[]
+    }
+
+    labResults: {
+      name: string
+      nameofLab: string
+      dateAdded: string
+      diagnozedBy: string
+      image: [string]
+      description: string
+    }[]
+
+    immunization: {
+      name: string
+      diagnozedBy: string
+      description: string
+    }[]
+
+    clinicalVitals: {
+      name: string
+      diagnozedBy: string
+      description: string
+    }[]
+
+    allergies: {
+      name: string
+      diagnozedBy: string
+      description: string
+    }[]
+
+
+  }
   doctorInfo: {
     fullName: string;
     specialty: string;
@@ -46,19 +133,22 @@ export interface IUser extends Document {
 
 
 
+// Basic Information Schema
 const basicInfoSchema: Schema = new Schema({
 
 
-  birthDate: stringDefault,
+  dateOfBirth: stringDefault,
   gender: stringDefault,
   languages: {type: [String], default: []},
   contactInfo: {
     email: stringDefault,
+    zipCode: stringDefault,
     emergencyPhoneNumber: stringDefault,
     address: stringDefault,
   },
   emergencyContact: {
     name: stringDefault,
+    zipCode: stringDefault,
     contactEmergencyPhoneNumber: stringDefault,
     relationship: stringDefault,
   },
@@ -77,6 +167,186 @@ const basicInfoSchema: Schema = new Schema({
 });
 
 
+// Health Metrics Schema
+const healthMetricsSchema: Schema = new Schema({
+  basic: {
+    height: stringDefault,
+    weight: stringDefault,
+    bodyMass: stringDefault,
+    bloodGroup: stringDefault,
+  },
+  advancedInfo: {
+    bloodPressure: stringDefault,
+    totalCholesterol: stringDefault,
+    LDL: stringDefault,
+    HDL: stringDefault,
+    triglycerides: stringDefault,
+    cholesterolHDLRatio: stringDefault,
+    glucose: stringDefault,
+  }
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+      delete returnedObject.createdAt;
+      delete returnedObject.updatedAt;
+    }
+  },
+  timestamps: true
+});
+
+
+// Condition Schema
+const conditionsSchema: Schema = new Schema({
+  name: stringDefault,
+  dateAdded: stringDefault,
+  diagnozedBy: stringDefault,
+  description: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+// Treatment History Schema
+const treatmentHistorySchema: Schema = new Schema({
+  name: stringDefault,
+  diagnozedBy: stringDefault,
+  description: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+
+
+// Medication Schema
+const medicationSchema: Schema = new Schema({
+  name: stringDefault,
+  dosage: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+// Lab Result Schema
+const labResultSchema: Schema = new Schema({
+  name: stringDefault,
+  nameofLab: stringDefault,
+  dateAdded: stringDefault,
+  diagnozedBy: stringDefault,
+  image: [String],
+  description: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+
+// Immunization Schema
+const immunizationSchema: Schema = new Schema({
+  name: stringDefault,
+  diagnozedBy: stringDefault,
+  description: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+
+// Clinical Vitals Schema
+const clinicalVitalsSchema: Schema = new Schema({
+  name: stringDefault,
+  diagnozedBy: stringDefault,
+  description: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+
+// Allergy Schema
+const allergySchema: Schema = new Schema({
+  name: stringDefault,
+  diagnozedBy: stringDefault,
+  description: stringDefault,
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+    }
+  },
+  timestamps: true
+});
+
+
+
+
+
+
+// Patient Info Schema
+const patientInfoSchema: Schema = new Schema({
+  appointments: [{ type: Schema.Types.ObjectId, ref: 'appointment' }],
+
+  basicInformation: basicInfoSchema,
+  healthMetrics: healthMetricsSchema,
+  conditions: [conditionsSchema],
+
+  treatmentHistory: [treatmentHistorySchema],
+  medications: {
+    generalMedication: [medicationSchema],
+    advancedMedication: [medicationSchema],
+  },
+
+  labResults: [labResultSchema],
+  immunization: [immunizationSchema],
+  clinicalVitals: [clinicalVitalsSchema],
+  allergies: [allergySchema],
+  
+}, {
+  toJSON: {
+    transform(document, returnedObject) {
+      delete returnedObject.__v;
+      delete returnedObject._id;
+      delete returnedObject.createdAt;
+      delete returnedObject.updatedAt;
+    }
+  },
+  timestamps: true
+});
+
+
 
 const doctorInfoSchema: Schema = new Schema({
 
@@ -89,7 +359,7 @@ const doctorInfoSchema: Schema = new Schema({
   consultationFee: numberDefault,
 
   workingHours:stringDefault,
-  appointments: [{ type: mongoose.Types.ObjectId, ref: 'Appointment' }]
+  appointments: [{ type: mongoose.Types.ObjectId, ref: 'appointment' }]
 
 },{
     toJSON: {
@@ -110,11 +380,13 @@ const doctorInfoSchema: Schema = new Schema({
 
 
 const UserSchema: Schema = new Schema({
-  email: {
-    type: String,
-    default: null
-  },
+
   phoneNumber: {
+    type: String,
+    unique: true,
+    required: true,
+  },
+  patientID: {
     type: String,
     unique: true,
     required: true,
@@ -134,7 +406,7 @@ const UserSchema: Schema = new Schema({
 
 
   basicInformation : basicInfoSchema,
-
+  patientInfo: patientInfoSchema,
   doctorInfo: doctorInfoSchema,
 
   avatar: {
@@ -146,12 +418,35 @@ const UserSchema: Schema = new Schema({
 },{
     toJSON: {
         transform(document, returnedObject) {
-            returnedObject.id = returnedObject._id.toString(),
-            delete returnedObject._id;
-            delete returnedObject.__v;
-            delete returnedObject.createdAt;
-            delete returnedObject.updatedAt;
-            delete returnedObject.password;
+          returnedObject.id = returnedObject._id.toString();
+
+
+          delete returnedObject._id;
+          delete returnedObject.__v;
+          delete returnedObject.createdAt;
+          delete returnedObject.updatedAt;
+          delete returnedObject.password;
+    
+
+          switch (returnedObject.role) {
+            case 'doctor':
+              delete returnedObject.patientInfo;
+              break;
+            case 'patient':
+              delete returnedObject.doctorInfo;
+              break;
+            case 'user':
+              delete returnedObject.doctorInfo;
+              break;
+            case 'admin':
+
+            break;
+            default:
+
+            delete returnedObject.doctorInfo;
+              // delete returnedObject.patientInfo;
+              break;
+          }
 
         }
     },

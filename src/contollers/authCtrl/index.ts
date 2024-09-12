@@ -15,12 +15,12 @@ import { IReqAuth } from "../../types/express";
 import { generateOTP, generateTokens } from "../../utilities/tokenUtils";
 import { sendOTPEMail, sendOTPSMS } from "../../utilities/notificationUtility";
 import { hashPassword } from "../../utilities/passwordUtility";
+import { generateUniquePatientID } from "../../utilities/utils";
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
 
-    console.log("got here")
-    const { email, phoneNumber, password, country, state, firstName, lastName } = req.body;
+    const {  phoneNumber, password, country, state, firstName, lastName } = req.body;
     try {
       const existingUser = await Users.findOne({
         $or: [
@@ -33,9 +33,11 @@ const authCtrl = {
           .json({ message: "User account already exists." });
       }
 
+      const patientID = await generateUniquePatientID();
+
       const hashedPassword = await hashPassword(password, 12)
 
-      const user: IUser = new Users({ email, phoneNumber, password: hashedPassword, country, state, firstName, lastName });
+      const user: IUser = new Users({patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName });
       await user.save();
 
       res.status(201).json({
@@ -157,13 +159,13 @@ const authCtrl = {
         expiryDate,
       }).save();
 
-      if (user.email === identifier) {
-        // Send OTP via email
-        await sendOTPEMail(user.email, otp);
-      } else if (user.phoneNumber === identifier) {
-        // Send OTP via SMS
-        await sendOTPSMS(user.phoneNumber, otp);
-      }
+      // if (user.email === identifier) {
+      //   // Send OTP via email
+      //   await sendOTPEMail(user.email, otp);
+      // } else if (user.phoneNumber === identifier) {
+      //   // Send OTP via SMS
+      //   await sendOTPSMS(user.phoneNumber, otp);
+      // }
 
       res.status(200).json({ message: "Successful", otp });
 
@@ -193,13 +195,13 @@ const authCtrl = {
         expiryDate,
       }).save();
 
-      if (user.email === identifier) {
-        // Send OTP via email
-        await sendOTPEMail(user.email, otp);
-      } else if (user.phoneNumber === identifier) {
-        // Send OTP via SMS
-        await sendOTPSMS(user.phoneNumber, otp);
-      }
+      // if (user.email === identifier) {
+      //   // Send OTP via email
+      //   await sendOTPEMail(user.email, otp);
+      // } else if (user.phoneNumber === identifier) {
+      //   // Send OTP via SMS
+      //   await sendOTPSMS(user.phoneNumber, otp);
+      // }
 
       res.status(200).json({ message: "Successful", otp });
 
