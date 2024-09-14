@@ -14,7 +14,7 @@ router.get('/appointments/:id', auth, appointmentCtrl.getOneAppointment)
 
 router.get('/user-appointments', auth, appointmentCtrl.getUserAppointments)
 
-router.post('/appointments', validateBookingAppointment, appointmentCtrl.bookAppointment)
+router.post('/appointments', auth, validateBookingAppointment, appointmentCtrl.bookAppointment)
 
 router.put('/accept-appointment/:id', auth, appointmentCtrl.acceptAppointment)
 
