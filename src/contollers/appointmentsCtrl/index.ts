@@ -105,7 +105,7 @@ const appointmentCtrl = {
         .status(500)
         .json({ message: "Error booking appointment", error: err.message });
     }
-  },
+  }, 
 
   acceptAppointment: async (
     req: IReqAuth,
