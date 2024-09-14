@@ -23,7 +23,7 @@ export const checkPatientType = async (patientID: string) => {
     const patient = await Users.findById(patientID) 
 
 
-    if (patient && patient.patientInfo.appointments.length > 0) {
+    if (patient && patient?.patientInfo?.appointments?.length > 0) {
       return 'Old Patient';  
     } else {
       return 'New Patient'; 
