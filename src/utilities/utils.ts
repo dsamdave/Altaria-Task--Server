@@ -10,8 +10,6 @@ export const pagination = (req: Request) => {
 };
 
 
-
-
 export const checkPatientType = async (patientID: string) => {
 
   if (!patientID) {
