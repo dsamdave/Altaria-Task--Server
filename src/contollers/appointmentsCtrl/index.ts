@@ -82,8 +82,8 @@ const appointmentCtrl = {
 
   bookAppointment: async (req: IReqAuth, res: Response) => {
     try {
-      if (!req.user)
-        return res.status(401).json({ message: "Invalid Authentication." });
+      // if (!req.user)
+      //   return res.status(401).json({ message: "Invalid Authentication." });
 
       const { id, patientID } = req.user;
 
