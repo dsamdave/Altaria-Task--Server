@@ -1,6 +1,8 @@
 import nodemailer from "nodemailer";
 import twilio from 'twilio';
 
+const { TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } = process.env;
+
 
 
 export const sendOTPEMail = async (
@@ -45,20 +47,28 @@ export const sendOTPEMail = async (
 
 export const sendOTPSMS = async (
   phoneNumber: string,
-  otp: string,
-) => {
+  otp: string
+): Promise<string> => {
   try {
+    if (!TWILIO_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      throw new Error('Twilio credentials are not set properly in environment variables.');
+    }
 
-    const twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+    const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
 
-    await twilioClient.messages.create({
-      body: `Your OTP for password reset is: ${otp}. It is valid for 10 minutes.`,
-      from: process.env.TWILIO_PHONE_NUMBER,
+    const message = await twilioClient.messages.create({
+      body: `Your OTP is: ${otp}. It is valid for 10 minutes.`,
+      from: TWILIO_PHONE_NUMBER,
       to: phoneNumber,
     });
-    return "SMS sent successfully";
 
-  } catch (error: any) {
-    console.log(error);
+    console.log('Message SID:', message.sid);
+    return 'SMS sent successfully';
+
+  } catch (error) {
+    console.error('Failed to send SMS:', error);
+    throw new Error('Unable to send SMS. Please try again later.');
   }
 };
+
+

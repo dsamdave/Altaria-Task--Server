@@ -21,6 +21,8 @@ router.post('/reset-password', validateResetPassword, authCtrl.resetPasswordWith
 
 router.post('/update-basic-info', auth, authCtrl.updateBasicInfo)
 
+router.post('/test', authCtrl.test)
+
 
 
 

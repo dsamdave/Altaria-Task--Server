@@ -20,38 +20,35 @@ ExpressApp(app);
 
 // Socket.io
 
-// Store connected clients
-const clients = new Set<Socket>();
-
-const http = createServer(app);
-export const io = new Server(http, {
+const httpServer = createServer(app);
+export const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ['GET', 'POST'],
   },
 });
 
+// Handle Socket Connections
 io.on("connection", (socket: Socket) => {
-  SocketServer(socket);
-  clients.add(socket);
-  console.log(`"someone connected!" ${socket.id}`);
+  // console.log(`Client connected: ${socket.id}`);
+    SocketServer(socket, io);
 });
 
 // server listenning
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8082;
 
 const connectDB = async () => {
   try {
     await mongoose.connect(URI, {});
     console.log("MongoDB Connected...");
 
-    http.listen(PORT, () => {
+    httpServer.listen(PORT, () => {
       console.log(`Server listening on port: ${PORT}`);
     });
   } catch (error) {
     console.log("MongoDB unable to Connect...");
-    console.error(error); // Improved error logging
-    process.exit(1); // Exit process with failure
+    console.error(error); 
+    process.exit(1);  
   }
 };
 

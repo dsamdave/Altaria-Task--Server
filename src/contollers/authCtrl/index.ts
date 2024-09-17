@@ -368,6 +368,23 @@ const authCtrl = {
       return res.status(500).json({ message: err.message });
     }
   },
+
+  test: async (req: IReqAuth, res: Response, next: NextFunction) => {
+    try {
+      const { to } = req.body;
+
+      const otp = generateOTP();
+
+        await sendOTPSMS(to, otp)
+
+      res.status(201).json({
+        message: "User registered successfully.",
+
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: "Server error.", error: err.message });
+    }
+  },
 };
 
 export default authCtrl;
