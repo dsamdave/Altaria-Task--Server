@@ -1,5 +1,5 @@
 import { Schema, model, Document } from "mongoose";
-import { reqString } from "../../types/schemaTypes";
+import { reqString, stringDefault } from "../../types/schemaTypes";
 
 // Define the interface
 interface IAppointment extends Document {
@@ -51,17 +51,17 @@ const appointmentSchema = new Schema<IAppointment>(
       default: "Pending",
     },
     
-    appointMentNature: reqString,
-    appointMentType: reqString,
+    appointMentNature: stringDefault,
+    appointMentType: stringDefault,
     
     forSomeOne: { type: Boolean },
     someOneDetails: {
-      patientName: reqString,
-      firstName: reqString,
-      gender: reqString,
-      lastName: reqString,
-      phone: reqString,
-      dOB: reqString
+      patientName: stringDefault,
+      firstName: stringDefault,
+      gender: stringDefault,
+      lastName: stringDefault,
+      phone: stringDefault,
+      dOB: stringDefault
     }
   },
   {
