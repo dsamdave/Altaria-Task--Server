@@ -82,30 +82,49 @@ const appointmentCtrl = {
 
   bookAppointment: async (req: IReqAuth, res: Response) => {
     try {
-      if (!req.user)
+      if (!req.user) {
         return res.status(401).json({ message: "Invalid Authentication." });
-
+      }
+  
       const { id, patientID } = req.user;
-
+  
       const patientType = await checkPatientType(id);
-
-      const savedAppointment = new Appointments({ ...req.body, patientType, user: id, patientID });
+  
+      const { forSomeOne, firstName, lastName, gender, phone, dOB, ...rest } = req.body;
+  
+      const appointmentData = {
+        ...rest,
+        patientType,
+        user: id,
+        patientID,
+        someOneDetails: forSomeOne
+          ? {
+              patientName: `${firstName} ${lastName}`,
+              firstName,
+              gender,
+              lastName,
+              phone,
+              dOB
+            }
+          : undefined  
+      };
+  
+      const savedAppointment = new Appointments(appointmentData);
       await savedAppointment.save();
-
+  
       await Users.findByIdAndUpdate(id, {
         $push: { "patientInfo.appointments": savedAppointment._id },
       });
-
+  
       return res.status(200).json({
         message: "Successful",
         appointment: savedAppointment,
       });
     } catch (err: any) {
-      return res
-        .status(500)
-        .json({ message: "Error booking appointment", error: err.message });
+      return res.status(500).json({ message: "Error booking appointment", error: err.message });
     }
-  }, 
+  },
+  
 
   acceptAppointment: async (
     req: IReqAuth,
