@@ -20,7 +20,7 @@ import { generateUniquePatientID } from "../../utilities/utils";
 const authCtrl = {
   register: async (req: Request, res: Response) => {
 
-    const {  phoneNumber, password, country, state, firstName, lastName } = req.body;
+    const {  phoneNumber, password, country, state, firstName, lastName, longitude, latitude } = req.body;
     try {
       const existingUser = await Users.findOne({
         $or: [
@@ -37,7 +37,7 @@ const authCtrl = {
 
       const hashedPassword = await hashPassword(password, 12)
 
-      const user: IUser = new Users({patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName });
+      const user: IUser = new Users({patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName, longitude, latitude });
       await user.save();
 
       res.status(201).json({
@@ -355,6 +355,40 @@ const authCtrl = {
             },
             avatar
           },
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Successful",
+        application: updatedApplication,
+      });
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  },
+
+  updateUserLocation: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.user)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const loggedInUser = req.user;
+
+      const {
+        latitude, longitude
+      } = req.body;
+
+      const updatedApplication = await Users.findOneAndUpdate(
+        {
+          $or: [
+            { email: loggedInUser.email },
+            { phoneNumber: loggedInUser.phoneNumber },
+          ],
+        },
+        {
+          latitude, longitude
         },
         { new: true }
       );

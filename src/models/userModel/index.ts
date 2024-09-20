@@ -16,6 +16,9 @@ export interface IUser extends Document {
   state: string
   avatar: string
 
+  latitude: number;
+  longitude: number;
+
 
   patientInfo: {
 
@@ -399,6 +402,16 @@ const UserSchema: Schema = new Schema({
     type: String,
     default: "user", 
   },
+
+  latitude: {
+    type: Number,
+    default: null, 
+  },
+  longitude: {
+    type: Number,
+    default: null, 
+  },
+
   firstName: stringDefault,
   lastName: stringDefault,
   country: stringDefault,
