@@ -90,25 +90,36 @@ const appointmentCtrl = {
   
       const patientType = await checkPatientType(id);
   
-      const { forSomeOne, firstName, lastName, gender, phone, dOB, ...rest } = req.body;
+      // Destructure the required fields from req.body
+      const {
+        forSomeOne,
+        firstName,
+        lastName,
+        gender,
+        phone,
+        dOB,
+        ...rest
+      } = req.body;
   
+      // Create appointment data object
       const appointmentData = {
         ...rest,
         patientType,
         user: id,
         patientID,
-        someOneDetails: forSomeOne
-          ? {
-              patientName: `${firstName} ${lastName}`,
-              firstName,
-              gender,
-              lastName,
-              phone,
-              dOB
-            }
-          : undefined  
+        ...(forSomeOne && {
+          someOneDetails: {
+            patientName: `${firstName} ${lastName}`,
+            firstName,
+            gender,
+            lastName,
+            phone,
+            dOB,
+          },
+        }),
       };
   
+      // Create and save the appointment
       const savedAppointment = new Appointments(appointmentData);
       await savedAppointment.save();
   
@@ -123,7 +134,8 @@ const appointmentCtrl = {
     } catch (err: any) {
       return res.status(500).json({ message: "Error booking appointment", error: err.message });
     }
-  },
+  }
+  ,
   
 
   acceptAppointment: async (

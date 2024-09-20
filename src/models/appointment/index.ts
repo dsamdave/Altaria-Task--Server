@@ -54,7 +54,6 @@ const appointmentSchema = new Schema<IAppointment>(
     appointMentNature: reqString,
     appointMentType: reqString,
     
-    
     forSomeOne: { type: Boolean },
     someOneDetails: {
       patientName: reqString,
