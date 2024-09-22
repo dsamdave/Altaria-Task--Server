@@ -6,10 +6,67 @@ import Users from "../../models/userModel";
 import Appointments from "../../models/appointment";
 
 const appointmentCtrl = {
+  getNextAppointments: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.admin && !req.user && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const { limit, skip, page } = pagination(req);
+
+      const today = new Date();
+      const appointments = await Appointments.find({
+        date: { $gte: today },
+      })
+        .sort({ date: 1, time: 1 })
+        .limit(limit)
+        .skip(skip)
+        .populate("user");
+
+      return res.status(200).json({
+        message: "Successful",
+        page,
+        count: appointments.length,
+        appointments,
+      });
+    } catch (err: any) {
+      return res
+        .status(500)
+        .json({ message: "Error retrieving appointments", error: err.message });
+    }
+  },
+
+  getPastAppointments: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.admin && !req.user && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const { limit, skip, page } = pagination(req);
+
+      const today = new Date();
+      const appointments = await Appointments.find({
+        date: { $lt: today },
+      })
+        .sort({ date: -1, time: -1 })
+        .limit(limit)
+        .skip(skip)
+        .populate("user");
+
+      return res.status(200).json({
+        message: "Successful",
+        page,
+        count: appointments.length,
+        appointments,
+      });
+    } catch (err: any) {
+      return res
+        .status(500)
+        .json({ message: "Error retrieving appointments", error: err.message });
+    }
+  },
   getAllAppointments: async (req: IReqAuth, res: Response) => {
     try {
       if (!req.admin && !req.user && !req.moderator && !req.doctor)
-        return res.status(401).json({ message: "Invalid Authentication."});
+        return res.status(401).json({ message: "Invalid Authentication." });
 
       const { limit, skip, page } = pagination(req);
 
@@ -31,12 +88,15 @@ const appointmentCtrl = {
         .json({ message: "Error retrieving appointments", error: err.message });
     }
   },
+
   getOneAppointment: async (req: IReqAuth, res: Response) => {
     try {
       if (!req.admin && !req.user && !req.moderator && !req.doctor)
         return res.status(401).json({ message: "Invalid Authentication." });
 
-      const appointment = await Appointments.findById(req.params.id).populate("user")
+      const appointment = await Appointments.findById(req.params.id).populate(
+        "user"
+      );
 
       if (!appointment) {
         return res.status(404).json({ message: "Appointment not found" });
@@ -60,10 +120,7 @@ const appointmentCtrl = {
       const { limit, skip, page } = pagination(req);
 
       const appointments = await Appointments.find({
-        $or: [
-          { user: req.user.id },
-          { patientID: req.user.patientID },
-        ],
+        $or: [{ user: req.user.id }, { patientID: req.user.patientID }],
       })
         .limit(limit)
         .skip(skip)
@@ -85,13 +142,14 @@ const appointmentCtrl = {
       if (!req.user) {
         return res.status(401).json({ message: "Invalid Authentication." });
       }
-  
+
       const { id, patientID } = req.user;
-  
+
       const patientType = await checkPatientType(id);
-  
-      const { forSomeOne, firstName, lastName, gender, phone, dOB, ...rest } = req.body;
-  
+
+      const { forSomeOne, firstName, lastName, gender, phone, dOB, ...rest } =
+        req.body;
+
       const appointmentData = {
         ...rest,
         patientType,
@@ -105,27 +163,28 @@ const appointmentCtrl = {
               gender,
               lastName,
               phone,
-              dOB
+              dOB,
             }
-          : undefined  
+          : undefined,
       };
-  
+
       const savedAppointment = new Appointments(appointmentData);
       await savedAppointment.save();
-  
+
       await Users.findByIdAndUpdate(id, {
         $push: { "patientInfo.appointments": savedAppointment._id },
       });
-  
+
       return res.status(200).json({
         message: "Successful",
         appointment: savedAppointment,
       });
     } catch (err: any) {
-      return res.status(500).json({ message: "Error booking appointment", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Error booking appointment", error: err.message });
     }
   },
-  
 
   acceptAppointment: async (
     req: IReqAuth,
@@ -136,7 +195,7 @@ const appointmentCtrl = {
       if (!req.admin && !req.moderator && !req.doctor)
         return res.status(401).json({ message: "Invalid Authentication." });
 
-      console.log(req.admin, req.moderator, req.doctor)
+      console.log(req.admin, req.moderator, req.doctor);
 
       const appointment = await Appointments.findByIdAndUpdate(
         req.params.id,
@@ -202,12 +261,10 @@ const appointmentCtrl = {
         appointments,
       });
     } catch (err: any) {
-      res
-        .status(500)
-        .json({
-          message: `Error retrieving ${status.toLowerCase()} appointments`,
-          error: err.message,
-        });
+      res.status(500).json({
+        message: `Error retrieving ${status.toLowerCase()} appointments`,
+        error: err.message,
+      });
     }
   },
 
