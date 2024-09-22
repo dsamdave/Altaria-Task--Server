@@ -21,6 +21,8 @@ router.post('/reset-password', validateResetPassword, authCtrl.resetPasswordWith
 
 router.post('/update-basic-info', auth, authCtrl.updateBasicInfo)
 
+router.post('/update-avatar', auth, authCtrl.updateAvatar)
+
 router.post('/update-location', authCtrl.updateUserLocation)
 
 router.post('/test', authCtrl.test)

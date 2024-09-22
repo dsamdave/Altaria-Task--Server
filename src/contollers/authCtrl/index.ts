@@ -369,6 +369,40 @@ const authCtrl = {
     }
   },
 
+  updateAvatar: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.user)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const loggedInUser = req.user;
+
+      const {
+        avatar
+      } = req.body;
+
+      const user = await Users.findOneAndUpdate(
+        {
+          $or: [
+            { email: loggedInUser.email },
+            { phoneNumber: loggedInUser.phoneNumber },
+          ],
+        },
+        {
+          avatar
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Successful",
+        user
+      });
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  },
+
   updateUserLocation: async (req: IReqAuth, res: Response) => {
     try {
       if (!req.user)
