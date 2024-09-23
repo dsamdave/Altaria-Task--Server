@@ -17,10 +17,24 @@ const userCtrl = {
         { $set: { "patientInfo.basicInformation": basicInformation } },
         { new: true, upsert: true }
       );
-      res.status(200).json({
-        message: "Successful",
-        patient 
-      } );
+
+      if(patient){
+        patient.firstName = req.body.firstName
+        patient.lastName = req.body.lastName
+        await patient.save()
+
+        res.status(200).json({
+          message: "Successful",
+          patient 
+        } );
+
+      } else {
+
+        res.status(200).json({
+          message: "Update Failed."
+        } );
+
+      }
     } catch (error) {
       res.status(400).json({ message: "Error upserting basic information" });
     }
