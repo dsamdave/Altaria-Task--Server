@@ -5,6 +5,7 @@ import { numberDefault, stringDefault } from '../../types/schemaTypes';
 export interface IUser extends Document {
   patientID: string;
   phoneNumber: string;
+  email: string;
   password: string;
 
   role: string;
@@ -388,6 +389,9 @@ const UserSchema: Schema = new Schema({
     type: String,
     unique: true,
     required: true,
+  },
+  email: {
+    type: String,
   },
   patientID: {
     type: String,

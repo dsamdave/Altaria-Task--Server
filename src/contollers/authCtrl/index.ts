@@ -20,11 +20,11 @@ import { generateUniquePatientID } from "../../utilities/utils";
 const authCtrl = {
   register: async (req: Request, res: Response) => {
 
-    const {  phoneNumber, password, country, state, firstName, lastName, longitude, latitude } = req.body;
+    const {  phoneNumber, password, country, state, firstName, lastName, longitude, latitude, email } = req.body;
     try {
       const existingUser = await Users.findOne({
         $or: [
-          // { email }, 
+          { email }, 
           { phoneNumber }],
       });  
       if (existingUser) {
@@ -37,7 +37,7 @@ const authCtrl = {
 
       const hashedPassword = await hashPassword(password, 12)
 
-      const user: IUser = new Users({patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName, longitude, latitude });
+      const user: IUser = new Users({email, patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName, longitude, latitude });
       await user.save();
 
       res.status(201).json({
