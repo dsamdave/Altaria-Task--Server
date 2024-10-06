@@ -8,6 +8,9 @@ interface IAppointment extends Document {
 
   category: string;
   reason: string;
+  insuranceProvider: string;
+  policyNumber: string;
+  groupNumber: string;
   
   date: Date;
   time: string;
@@ -36,9 +39,12 @@ const appointmentSchema = new Schema<IAppointment>(
   {
     category: { type: String, required: true },
     reason: { type: String, required: true },
+    insuranceProvider:stringDefault,
+    policyNumber: stringDefault,
+    groupNumber: stringDefault,
     
     user: { type: Schema.Types.ObjectId, ref: "user", required: true },
-    patientID: { type: String },
+    patientID:stringDefault,
     
     date: { type: Date, required: true },
     time: { type: String, required: true },
