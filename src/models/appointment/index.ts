@@ -11,27 +11,27 @@ interface IAppointment extends Document {
   insuranceProvider: string;
   policyNumber: string;
   groupNumber: string;
-  
+  images: string[];
+
   date: Date;
   time: string;
-  
+
   patientType: string;
-  
+
   status: "Pending" | "Accepted" | "Declined" | "Concluded";
-  
-  appointMentNature: string
-  appointMentType: string
-  
-  
-  forSomeOne: boolean
+
+  appointMentNature: string;
+  appointMentType: string;
+
+  forSomeOne: boolean;
   someOneDetails: {
     patientName: string;
-    firstName: string
-    gender: string
-    lastName: string
-    phone: string
-    dOB: string
-  }
+    firstName: string;
+    gender: string;
+    lastName: string;
+    phone: string;
+    dOB: string;
+  };
 }
 
 // Define the schema
@@ -39,27 +39,28 @@ const appointmentSchema = new Schema<IAppointment>(
   {
     category: { type: String, required: true },
     reason: { type: String, required: true },
-    insuranceProvider:stringDefault,
+    images: { type: [String] },
+    insuranceProvider: stringDefault,
     policyNumber: stringDefault,
     groupNumber: stringDefault,
-    
+
     user: { type: Schema.Types.ObjectId, ref: "user", required: true },
-    patientID:stringDefault,
-    
+    patientID: stringDefault,
+
     date: { type: Date, required: true },
     time: { type: String, required: true },
-    
+
     patientType: { type: String, required: true },
-    
+
     status: {
       type: String,
       enum: ["Pending", "Accepted", "Declined", "Concluded"],
       default: "Pending",
     },
-    
+
     appointMentNature: stringDefault,
     appointMentType: stringDefault,
-    
+
     forSomeOne: { type: Boolean },
     someOneDetails: {
       patientName: stringDefault,
@@ -67,8 +68,8 @@ const appointmentSchema = new Schema<IAppointment>(
       gender: stringDefault,
       lastName: stringDefault,
       phone: stringDefault,
-      dOB: stringDefault
-    }
+      dOB: stringDefault,
+    },
   },
   {
     toJSON: {
