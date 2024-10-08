@@ -21,7 +21,7 @@ router.put('/lab-results/:patientID/:labResultID?', auth, userCtrl.upsertLabResu
 
 router.put('/immunization/:patientID/:immunizationID?', auth, userCtrl.upsertImmunization);
 router.put('/clinical-vitals/:patientID/:vitalID?', auth, userCtrl.upsertClinicalVitals);
-router.put('/allergies/:patientID/:allergyID?', auth, userCtrl.upsertAllergy);
+router.put('/allergies/:patientID/:allergyID?', userCtrl.upsertAllergy);
 
 
 
