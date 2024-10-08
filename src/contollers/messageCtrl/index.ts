@@ -26,6 +26,8 @@ const messageCtrl = {
 
         conversation.lastMessage = message;
         conversation.lastMessageTime = currentDate;
+        conversation.doctor = doctorID;
+        conversation.patient = patientID;
         await conversation.save();
       } else {
 
@@ -33,6 +35,8 @@ const messageCtrl = {
           participants: [patientID, doctorID],
           lastMessage: message,
           lastMessageTime: currentDate,
+          doctor: doctorID,
+          patient: patientID
         });
         await conversation.save();
       }

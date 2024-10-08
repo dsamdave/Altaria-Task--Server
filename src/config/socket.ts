@@ -131,7 +131,9 @@ export const SocketServer = (socket: Socket, io: Server) => {
       })
       .sort({ lastMessageTime: -1 })
       .limit(limit)
-      .skip(skip);
+      .skip(skip)
+      .populate("doctor")
+      .populate("patient")
   
       // Emit to the room with the user's ID
       io.to(userID).emit('conversationHistory', conversations);

@@ -4,12 +4,16 @@ export interface IConversation extends Document {
   participants: string[]; // Array of user IDs
   lastMessage: string;
   lastMessageTime: Date;
+  doctor: Schema.Types.ObjectId;
+  patient: Schema.Types.ObjectId;
 }
 
 const ConversationSchema: Schema = new Schema({
   participants: [{ type: String, required: true }],
   lastMessage: { type: String, required: true },
   lastMessageTime: { type: Date, default: Date.now },
+  doctor: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  patient: { type: Schema.Types.ObjectId, ref: "user", required: true },
 
 
 },{
