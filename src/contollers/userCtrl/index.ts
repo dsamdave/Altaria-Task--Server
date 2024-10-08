@@ -252,6 +252,23 @@ const userCtrl = {
     }
   },
 
+  getAllergies: async (req: IReqAuth, res: Response) => {
+
+    const { patientID } = req.params;
+  
+    try {
+      const patient =  await Users.findById(patientID)
+
+          res.status(200).json({
+            message: "Successful",
+            allergies: patient?.patientInfo.allergies
+          } );
+
+        } catch (error) {
+      res.status(400).json({ message: 'Error upserting allergy' });
+    }
+  },
+
   example: async (req: IReqAuth, res: Response) => {},
 };
 
