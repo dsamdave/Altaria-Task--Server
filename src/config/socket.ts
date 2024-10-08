@@ -53,7 +53,7 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
 
   
-  socket.on("chatMessage", async ({ patientID, doctorID, message, attachments, links }) => {
+  socket.on("chatMessage", async ({sender, recipient, patientID, doctorID, message, attachments, links }) => {
     try {
       // Find or create the conversation
       let conversation = await Conversations.findOne({
@@ -62,17 +62,25 @@ export const SocketServer = (socket: Socket, io: Server) => {
   
       const currentDate = new Date();
   
-      if (conversation) {
-        // Update last message and time
+      if (conversation && isSameWeek(conversation.lastMessageTime, currentDate)) {
+
         conversation.lastMessage = message;
         conversation.lastMessageTime = currentDate;
+        conversation.doctor = doctorID;
+        conversation.patient = patientID;
+        conversation.sender = sender;
+        conversation.recipient = recipient;
         await conversation.save();
       } else {
-        // Create a new conversation if it doesn't exist
+
         conversation = new Conversations({
           participants: [patientID, doctorID],
           lastMessage: message,
           lastMessageTime: currentDate,
+          doctor: doctorID,
+          patient: patientID,
+          recipient,
+          sender
         });
         await conversation.save();
       }
@@ -85,6 +93,11 @@ export const SocketServer = (socket: Socket, io: Server) => {
         attachments,
         links,
         conversationID: conversation._id,
+        sender,
+        recipient,
+        doctor: doctorID,
+        patient: patientID,
+        
       });
   
       await newMessage.save();
@@ -124,14 +137,12 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
   // Retrieve chat history
 
-  socket.on("getChatsHistory", async ({ userID, limit = 20, skip = 0 }) => {
+  socket.on("getChatsHistory", async ({ userID }) => {
     try {
       const conversations = await Conversations.find({
         participants: userID,
       })
       .sort({ lastMessageTime: -1 })
-      .limit(limit)
-      .skip(skip)
       .populate("doctor")
       .populate("patient")
   
@@ -160,7 +171,7 @@ export const SocketServer = (socket: Socket, io: Server) => {
     } catch (error) {
       console.error("Error fetching messages:", error);
   
-      io.to(userID).emit("chatMessages", { message: "Failed to fetch messages" });
+      io.to(userID).emit("chatMessagesError", { message: "Failed to fetch messages" });
     }
   });
 
