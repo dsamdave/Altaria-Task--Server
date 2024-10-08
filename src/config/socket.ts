@@ -2,6 +2,10 @@ import { Socket, Server } from "socket.io";
 // import { IUser } from './interface';
 import Chat from "../models/chatModel";
 import { io } from "../index";
+import Conversations from "../models/messageModel/conversationModel";
+import Messages from "../models/messageModel";
+import { startOfWeek, isSameWeek } from 'date-fns';
+
 
 export interface ISocketUser {
   id: string;
@@ -43,35 +47,109 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
 
 
-  // Chat message event
-  socket.on("chatMessage", async ({ sender, recipient, message }) => {
-    const newMessage = new Chat({ sender, recipient, message });
-    await newMessage.save();
 
-    io.to(recipient).emit("newMessage", { sender, message });
+
+
+
+
+  
+  socket.on("chatMessage", async ({ patientID, doctorID, message, attachments, links }) => {
+    try {
+      // Find or create the conversation
+      let conversation = await Conversations.findOne({
+        participants: { $all: [patientID, doctorID] },
+      }).sort({ lastMessageTime: -1 });
+  
+      const currentDate = new Date();
+  
+      if (conversation) {
+        // Update last message and time
+        conversation.lastMessage = message;
+        conversation.lastMessageTime = currentDate;
+        await conversation.save();
+      } else {
+        // Create a new conversation if it doesn't exist
+        conversation = new Conversations({
+          participants: [patientID, doctorID],
+          lastMessage: message,
+          lastMessageTime: currentDate,
+        });
+        await conversation.save();
+      }
+  
+      // Create a new message
+      const newMessage = new Messages({
+        patientID,
+        doctorID,
+        message,
+        attachments,
+        links,
+        conversationID: conversation._id,
+      });
+  
+      await newMessage.save();
+  
+      // Emit to both sender and recipient
+      io.to(patientID).emit("newMessage", 
+      //   {
+      //   doctorID,
+      //   message,
+      //   attachments,
+      //   links,
+      //   conversationID: conversation._id,
+      //   timestamp: newMessage.createdAt,
+      // }
+      newMessage
+    );
+      io.to(doctorID).emit("newMessage", 
+      //   {
+      //   patientID,
+      //   message,
+      //   attachments,
+      //   links,
+      //   conversationID: conversation._id,
+      //   timestamp: newMessage.createdAt,
+      // }
+      newMessage
+    );
+  
+      socket.emit("messageDelivered", newMessage._id);
+    } catch (err) {
+      console.error("Error saving chat message:", err);
+    }
   });
+  
+
+
 
   // Retrieve chat history
-  socket.on("getChats", async ({ userId, recipientId }) => {
-    const chats = await Chat.find({
-      $or: [
-        { sender: userId, recipient: recipientId },
-        { sender: recipientId, recipient: userId },
-      ],
-    }).sort({ timestamp: 1 });
 
+  socket.on("getChats", async ({ userId, recipientId, limit = 20, skip = 0 }) => {
+    const chats = await Messages.find({
+      $or: [
+        { patientID: userId, doctorID: recipientId },
+        { patientID: recipientId, doctorID: userId },
+      ],
+    })
+    .sort({ createdAt: 1 }) 
+    .limit(limit)
+    .skip(skip);
+  
     socket.emit("chatHistory", chats);
   });
 
 
 
-  socket.on('typing', (roomId: string) => {
-    socket.to(roomId).emit('typing', socket.id);
+  socket.on('typing', (roomId: string, userId: string) => {
+    socket.to(roomId).emit('typing', userId);
+  });
+  
+  socket.on('stopTyping', (roomId: string, userId: string) => {
+    socket.to(roomId).emit('stopTyping', userId);
   });
 
-  socket.on('stopTyping', (roomId: string) => {
-    socket.to(roomId).emit('stopTyping', socket.id);
-  });
+
+
 
 
 

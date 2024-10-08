@@ -21,6 +21,7 @@ const userCtrl = {
       if(patient){
         patient.firstName = req.body.firstName
         patient.lastName = req.body.lastName
+        patient.email = req.body.email
         await patient.save()
 
         res.status(200).json({

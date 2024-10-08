@@ -5,6 +5,7 @@ import appointmentRoutes from "./appointmentRoutes"
 import freeQuestionsRoutes from "./freeQuestionsRoutes"
 import messagesRoutes from "./messagesRoutes"
 import userRoutes from "./userRoutes"
+import paymentRoutes from "./paymentRoutes"
 
 const routes = [
     comingSoonRoutes,
@@ -13,6 +14,7 @@ const routes = [
     freeQuestionsRoutes,
     messagesRoutes,
     userRoutes,
+    paymentRoutes,
 
 ]
 

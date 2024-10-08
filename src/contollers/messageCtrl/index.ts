@@ -2,44 +2,53 @@ import { Request, response, Response, NextFunction } from "express";
 import { IReqAuth } from "../../types/express";
 import Conversations from "../../models/messageModel/conversationModel";
 import Messages from "../../models/messageModel";
+import { startOfWeek, isSameWeek } from 'date-fns';
 
+
+ 
 const messageCtrl = {
   addMessage: async (req: IReqAuth, res: Response, next: NextFunction) => {
     try {
-      if (!req.admin && !req.user && !req.doctor)
+      if (!req.admin && !req.user && !req.doctor) {
         return res.status(401).json({ message: "Invalid Authentication." });
-
+      }
+  
       const { patientID, doctorID, message, attachments, links } = req.body;
+  
 
       let conversation = await Conversations.findOne({
         participants: { $all: [patientID, doctorID] },
-      });
+      }).sort({ lastMessageTime: -1 }); 
+  
+      const currentDate = new Date();
+  
+      if (conversation && isSameWeek(conversation.lastMessageTime, currentDate)) {
 
-      if (!conversation) {
+        conversation.lastMessage = message;
+        conversation.lastMessageTime = currentDate;
+        await conversation.save();
+      } else {
+
         conversation = new Conversations({
           participants: [patientID, doctorID],
           lastMessage: message,
-          lastMessageTime: new Date(),
+          lastMessageTime: currentDate,
         });
         await conversation.save();
-      } else {
-        conversation.lastMessage = message;
-        conversation.lastMessageTime = new Date();
-        await conversation.save();
       }
+  
 
-      // Save the message to the database
       const newMessage = new Messages({
         patientID,
         doctorID,
         message,
         attachments,
         links,
-        conversationId: conversation._id,
+        conversationID: conversation._id,
       });
-
+  
       await newMessage.save();
-
+  
       res.status(201).json({
         message: "Successful",
         newMessage,
@@ -57,14 +66,15 @@ const messageCtrl = {
     try {
       if (!req.admin && !req.user && !req.doctor)
         return res.status(401).json({ message: "Invalid Authentication." });
-
+  
       const { userID } = req.params;
-
+  
+      // Fetch conversations for the user, sorted by the most recent message time
       const conversations = await Conversations.find({
         participants: userID,
       }).sort({ lastMessageTime: -1 });
-
-      res.status(201).json({
+  
+      res.status(200).json({
         message: "Successful",
         conversations,
       });
@@ -77,14 +87,15 @@ const messageCtrl = {
     try {
       if (!req.admin && !req.user && !req.doctor)
         return res.status(401).json({ message: "Invalid Authentication." });
-
+  
       const { conversationID } = req.params;
+  
 
       const messages = await Messages.find({
         conversationID,
       }).sort({ timestamp: 1 });
-
-      res.status(201).json({
+  
+      res.status(200).json({
         message: "Successful",
         messages,
       });
