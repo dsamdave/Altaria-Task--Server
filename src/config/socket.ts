@@ -30,9 +30,9 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
   // Handle joining users to rooms
 
-  socket.on("joinRoom", (roomId: string) => {
-    socket.join(roomId);
-    console.log(`User ${socket.id} joined room ${roomId}`);
+  socket.on("joinRoom", (userID: string) => {
+    socket.join(userID);
+    console.log(`User ${socket.id} joined room ${userID}`);
     // addClient(socket);
     // console.log({ joinChat: (socket as any).adapter.rooms });
   });
@@ -126,20 +126,19 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
   socket.on("getChatsHistory", async ({ userID, limit = 20, skip = 0 }) => {
     try {
-
       const conversations = await Conversations.find({
         participants: userID,
       })
-        .sort({ lastMessageTime: -1 })
-        .limit(limit)
-        .skip(skip);
+      .sort({ lastMessageTime: -1 })
+      .limit(limit)
+      .skip(skip);
   
-
-        socket.emit("conversationHistory", conversations);
+      // Emit to the room with the user's ID
+      io.to(userID).emit('conversationHistory', conversations);
     } catch (error) {
       console.error("Error fetching conversations:", error);
-
-      socket.emit("conversationHistoryError", { message: "Failed to fetch conversations" });
+  
+      io.to(userID).emit("conversationHistoryError", { message: "Failed to fetch conversations" });
     }
   });
 
