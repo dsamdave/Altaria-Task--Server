@@ -13,7 +13,7 @@ const messageCtrl = {
         return res.status(401).json({ message: "Invalid Authentication." });
       }
   
-      const { patientID, doctorID, message, attachments, links } = req.body;
+      const { sender, recipient, patientID, doctorID, message, attachments, links } = req.body;
   
 
       let conversation = await Conversations.findOne({
@@ -28,6 +28,8 @@ const messageCtrl = {
         conversation.lastMessageTime = currentDate;
         conversation.doctor = doctorID;
         conversation.patient = patientID;
+        conversation.sender = sender;
+        conversation.recipient = recipient;
         await conversation.save();
       } else {
 
@@ -36,7 +38,9 @@ const messageCtrl = {
           lastMessage: message,
           lastMessageTime: currentDate,
           doctor: doctorID,
-          patient: patientID
+          patient: patientID,
+          recipient,
+          sender
         });
         await conversation.save();
       }
@@ -49,6 +53,11 @@ const messageCtrl = {
         attachments,
         links,
         conversationID: conversation._id,
+        sender,
+        recipient,
+        doctor: doctorID,
+        patient: patientID,
+        
       });
   
       await newMessage.save();

@@ -12,6 +12,10 @@ export interface IMessage extends Document {
   attachments?: IAttachment[];
   links?: string[];
   conversationID: string;
+  recipient: Schema.Types.ObjectId;
+  sender: Schema.Types.ObjectId;
+  doctor: Schema.Types.ObjectId;
+  patient: Schema.Types.ObjectId;
 }
 
 const MessageSchema: Schema = new Schema(
@@ -23,7 +27,13 @@ const MessageSchema: Schema = new Schema(
     attachments: [{ url: String, filename: String }],
     links: [String],
 
+    doctor: { type: Schema.Types.ObjectId, ref: "user", required: true },
+    patient: { type: Schema.Types.ObjectId, ref: "user", required: true },
+
     conversationID: { type: String, required: true },
+    recipient: { type: Schema.Types.ObjectId, ref: "user", required: true },
+    sender: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  
   },
   {
     toJSON: {

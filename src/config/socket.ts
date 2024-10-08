@@ -145,18 +145,23 @@ export const SocketServer = (socket: Socket, io: Server) => {
   });
 
 
-  socket.on("getChats", async ({ userId, recipientId, limit = 20, skip = 0 }) => {
-    const chats = await Messages.find({
-      $or: [
-        { patientID: userId, doctorID: recipientId },
-        { patientID: recipientId, doctorID: userId },
-      ],
+  socket.on("getChats", async ({conversationID, userID  }) => {
+    try {
+
+    const messages = await Messages.find({
+      conversationID,
     })
-    .sort({ createdAt: 1 }) 
-    .limit(limit)
-    .skip(skip);
+    .sort({ timestamp: 1 })
+    .populate("doctor")
+    .populate("patient")
   
-    socket.emit("chatHistory", chats);
+    io.to(userID).emit('chatMessages', messages);
+
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+  
+      io.to(userID).emit("chatMessages", { message: "Failed to fetch messages" });
+    }
   });
 
 

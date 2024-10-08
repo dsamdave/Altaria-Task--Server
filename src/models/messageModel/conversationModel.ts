@@ -6,6 +6,8 @@ export interface IConversation extends Document {
   lastMessageTime: Date;
   doctor: Schema.Types.ObjectId;
   patient: Schema.Types.ObjectId;
+  sender: Schema.Types.ObjectId;
+  recipient: Schema.Types.ObjectId;
 }
 
 const ConversationSchema: Schema = new Schema({
@@ -14,6 +16,8 @@ const ConversationSchema: Schema = new Schema({
   lastMessageTime: { type: Date, default: Date.now },
   doctor: { type: Schema.Types.ObjectId, ref: "user", required: true },
   patient: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  sender: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  recipient: { type: Schema.Types.ObjectId, ref: "user", required: true },
 
 
 },{
