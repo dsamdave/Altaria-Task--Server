@@ -1,6 +1,7 @@
 import { Request, response, Response, NextFunction } from "express";
 import { IReqAuth } from "../../types/express";
-const stripe = require('stripe')(`${process.env.STRIPE_KEEY}`);
+const stripe = require('stripe')(`FLWPUBK-1c1e0cbdabe382254cca25dd5-X`);
+// const stripe = require('stripe')(`${process.env.STRIPE_KEEY}`);
 
 
 const paymentCtrl = {
