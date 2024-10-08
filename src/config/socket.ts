@@ -177,12 +177,14 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
 
 
-  socket.on('typing', (roomId: string, userId: string) => {
-    socket.to(roomId).emit('typing', userId);
+  socket.on('typing', (userID) => {
+    io.to(userID).emit('typing', userID);
+
   });
   
-  socket.on('stopTyping', (roomId: string, userId: string) => {
-    socket.to(roomId).emit('stopTyping', userId);
+  socket.on('stopTyping', (userID) => {
+    io.to(userID).emit('stopTyping', userID);
+
   });
 
 

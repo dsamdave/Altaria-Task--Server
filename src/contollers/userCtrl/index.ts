@@ -241,7 +241,12 @@ const userCtrl = {
           { $push: { 'patientInfo.allergies': allergyData } },
             { new: true }
           );
-      res.status(200).json(patient?.patientInfo.allergies);
+
+          res.status(200).json({
+            message: "Successful",
+            patient: patient?.patientInfo.allergies
+          } );
+      // res.status(200).json(patient?.patientInfo.allergies);
     } catch (error) {
       res.status(400).json({ message: 'Error upserting allergy' });
     }
