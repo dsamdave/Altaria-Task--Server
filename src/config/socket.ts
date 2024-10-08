@@ -124,6 +124,26 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
   // Retrieve chat history
 
+  socket.on("getChatsHistory", async ({ userID, limit = 20, skip = 0 }) => {
+    try {
+
+      const conversations = await Conversations.find({
+        participants: userID,
+      })
+        .sort({ lastMessageTime: -1 })
+        .limit(limit)
+        .skip(skip);
+  
+
+        socket.emit("conversationHistory", conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+
+      socket.emit("conversationHistoryError", { message: "Failed to fetch conversations" });
+    }
+  });
+
+
   socket.on("getChats", async ({ userId, recipientId, limit = 20, skip = 0 }) => {
     const chats = await Messages.find({
       $or: [
