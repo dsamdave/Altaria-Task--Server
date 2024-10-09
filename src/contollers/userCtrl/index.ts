@@ -2,6 +2,16 @@ import { Request, response, Response, NextFunction } from "express";
 import { IReqAuth } from "../../types/express";
 import Users from "../../models/userModel";
 
+interface IAllergy {
+  name: string;
+  diagnozedBy: string;
+  description: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+
+
 const userCtrl = {
   upsertBasicInformation: async (req: IReqAuth, res: Response) => {
 
@@ -253,21 +263,34 @@ const userCtrl = {
   },
 
   getAllergies: async (req: IReqAuth, res: Response) => {
-
     const { patientID } = req.params;
   
     try {
-      const patient =  await Users.findById(patientID)
+      const patient = await Users.findById(patientID);
+  
+      if (patient) {
 
-          res.status(200).json({
-            message: "Successful",
-            allergies: patient?.patientInfo.allergies
-          } );
+        const allergies = patient.patientInfo.allergies as IAllergy[];
+  
 
-        } catch (error) {
-      res.status(400).json({ message: 'Error upserting allergy' });
+        const sortedAllergies = allergies.sort((a, b) => {
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+  
+        res.status(200).json({
+          message: "Successful",
+          allergies: sortedAllergies
+        });
+      } else {
+        res.status(404).json({ message: "Patient not found" });
+      }
+  
+    } catch (error) {
+      res.status(400).json({ message: 'Error fetching allergies' });
     }
   },
+  
+  
 
   example: async (req: IReqAuth, res: Response) => {},
 };
