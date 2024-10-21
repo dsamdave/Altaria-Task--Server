@@ -137,6 +137,22 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
   // Retrieve chat history
 
+  socket.on("getChatsHistoryAdmin", async ({ userID }) => {
+    try {
+      const conversations = await Conversations.find()
+      .sort({ lastMessageTime: -1 })
+      .populate("doctor")
+      .populate("patient")
+  
+      // Emit to the room with the user's ID
+      io.to(userID).emit('conversationHistoryAdmin', conversations);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+  
+      io.to(userID).emit("conversationHistoryErrorAdmin", { message: "Failed to fetch conversations" });
+    }
+  });
+
   socket.on("getChatsHistory", async ({ userID }) => {
     try {
       const conversations = await Conversations.find({

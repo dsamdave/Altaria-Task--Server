@@ -6,6 +6,36 @@ import Users from "../../models/userModel";
 import Appointments from "../../models/appointment";
 
 const appointmentCtrl = {
+  getNextAppointmentsAdmin: async (req: IReqAuth, res: Response) => {
+    try {
+      if (!req.admin && !req.user && !req.moderator && !req.doctor)
+        return res.status(401).json({ message: "Invalid Authentication." });
+
+      const { limit, skip, page } = pagination(req);
+      const totalItems = await Appointments.countDocuments();
+
+
+      const today = new Date();
+      const appointments = await Appointments.find({
+        date: { $gte: today }
+      })
+        .sort({ date: 1, time: 1 })
+        .limit(limit)
+        .skip(skip)
+        .populate("user");
+
+      return res.status(200).json({
+        message: "Successful",
+        page,
+        count: appointments.length,
+        appointments,
+      });
+    } catch (err: any) {
+      return res
+        .status(500)
+        .json({ message: "Error retrieving appointments", error: err.message });
+    }
+  },
   getNextAppointments: async (req: IReqAuth, res: Response) => {
     try {
       if (!req.admin && !req.user && !req.moderator && !req.doctor)
@@ -15,7 +45,7 @@ const appointmentCtrl = {
 
       const today = new Date();
       const appointments = await Appointments.find({
-        date: { $gte: today },
+        date: { $gte: today }, user: req.user.id
       })
         .sort({ date: 1, time: 1 })
         .limit(limit)
@@ -44,7 +74,7 @@ const appointmentCtrl = {
 
       const today = new Date();
       const appointments = await Appointments.find({
-        date: { $lt: today },
+        date: { $lt: today } , user: req.user.id
       })
         .sort({ date: -1, time: -1 })
         .limit(limit)
@@ -69,6 +99,7 @@ const appointmentCtrl = {
         return res.status(401).json({ message: "Invalid Authentication." });
 
       const { limit, skip, page } = pagination(req);
+      const totalItems = await Appointments.countDocuments();
 
       const appointments = await Appointments.find()
         .limit(limit)
@@ -80,6 +111,7 @@ const appointmentCtrl = {
         message: "Successful",
         page,
         count: appointments.length,
+        totalItems,
         appointments,
       });
     } catch (err: any) {

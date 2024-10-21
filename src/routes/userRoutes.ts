@@ -25,6 +25,9 @@ router.put('/allergies/:patientID/:allergyID?', userCtrl.upsertAllergy);
 router.get('/allergies/:patientID', userCtrl.getAllergies);
 
 
+router.get('/patients', auth, userCtrl.getAllPatients);
+
+
 
 
 

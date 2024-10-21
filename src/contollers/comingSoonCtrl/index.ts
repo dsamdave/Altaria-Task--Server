@@ -1,6 +1,7 @@
 import { Request, response, Response } from "express";
 
 import ComingSoon from "../../models/comingSoonModel";
+import { pagination } from "../../utilities/utils";
 
 const comingSoonCtrl = {
   addComingSoonMsg: async (req: Request, res: Response) => {
@@ -26,10 +27,20 @@ const comingSoonCtrl = {
   
   getAllComingSoonMsg: async (req: Request, res: Response) => {
     try {
-      const comingSoonMsgs = await ComingSoon.find().sort({createdAt: -1});
+
+      const { limit, skip, page } = pagination(req);
+      const totalItems = await ComingSoon.countDocuments();
+
+
+      const comingSoonMsgs = await ComingSoon.find()        
+      .limit(limit)
+      .skip(skip)
+      .sort({ createdAt: -1 });
 
       return res.status(200).json({
         message: "Successful",
+        page,
+        totalItems,
         count: comingSoonMsgs.length,
         waitlist: comingSoonMsgs,
       });

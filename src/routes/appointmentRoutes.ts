@@ -10,6 +10,8 @@ const router = express.Router()
 
 router.get('/appointments', auth, appointmentCtrl.getAllAppointments)
 
+router.get('/admin-appointments/next', auth, appointmentCtrl.getNextAppointmentsAdmin)
+
 router.get('/appointments/next', auth, appointmentCtrl.getNextAppointments)
 
 router.get('/appointments/past', auth, appointmentCtrl.getPastAppointments)
