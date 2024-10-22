@@ -55,7 +55,7 @@ export const SocketServer = (socket: Socket, io: Server) => {
   
   socket.on("chatMessage", async ({sender, recipient, patientID, doctorID, message, attachments, links }) => {
     try {
-      // Find or create the conversation
+
       let conversation = await Conversations.findOne({
         participants: { $all: [patientID, doctorID] },
       }).sort({ lastMessageTime: -1 });
@@ -85,7 +85,7 @@ export const SocketServer = (socket: Socket, io: Server) => {
         await conversation.save();
       }
   
-      // Create a new message
+
       const newMessage = new Messages({
         patientID,
         doctorID,
@@ -102,27 +102,11 @@ export const SocketServer = (socket: Socket, io: Server) => {
   
       await newMessage.save();
   
-      // Emit to both sender and recipient
+
       io.to(patientID).emit("newMessage", 
-      //   {
-      //   doctorID,
-      //   message,
-      //   attachments,
-      //   links,
-      //   conversationID: conversation._id,
-      //   timestamp: newMessage.createdAt,
-      // }
       newMessage
     );
       io.to(doctorID).emit("newMessage", 
-      //   {
-      //   patientID,
-      //   message,
-      //   attachments,
-      //   links,
-      //   conversationID: conversation._id,
-      //   timestamp: newMessage.createdAt,
-      // }
       newMessage
     );
   
@@ -150,6 +134,19 @@ export const SocketServer = (socket: Socket, io: Server) => {
       console.error("Error fetching conversations:", error);
   
       io.to(userID).emit("conversationHistoryErrorAdmin", { message: "Failed to fetch conversations" });
+    }
+  });
+
+
+  socket.on("closeChat", async ({ conversationID, userID }) => {
+    try {
+      const conversation = await Conversations.findByIdAndUpdate(conversationID, {closed : true}, { new: true})
+  
+      // Emit to the room with the user's ID
+      io.to(userID).emit('chatClosed', conversation);
+    } catch (error) {
+  
+      io.to(userID).emit("closingChatError", { message: "Failed to close chat" });
     }
   });
 

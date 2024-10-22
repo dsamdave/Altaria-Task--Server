@@ -8,6 +8,7 @@ export interface IConversation extends Document {
   patient: Schema.Types.ObjectId;
   sender: Schema.Types.ObjectId;
   recipient: Schema.Types.ObjectId;
+  closed: boolean
 }
 
 const ConversationSchema: Schema = new Schema({
@@ -18,6 +19,7 @@ const ConversationSchema: Schema = new Schema({
   patient: { type: Schema.Types.ObjectId, ref: "user", required: true },
   sender: { type: Schema.Types.ObjectId, ref: "user", required: true },
   recipient: { type: Schema.Types.ObjectId, ref: "user", required: true },
+  closed: { type: Boolean, default: false },
 
 
 },{

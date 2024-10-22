@@ -12,6 +12,8 @@ const quesAnswerCtrl = {
         return res.status(401).json({ message: "Invalid Authentication." });
 
       const { limit, skip, page } = pagination(req);
+      const totalItems = await FreeHealthQues.countDocuments();
+
 
       const questions = await FreeHealthQues.find()
         .limit(limit)
@@ -22,7 +24,7 @@ const quesAnswerCtrl = {
       return res.status(200).json({
         message: "Successful",
         page,
-        count: questions.length,
+        totalItems,
         questions,
       });
     } catch (err: any) {
