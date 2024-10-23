@@ -157,15 +157,19 @@ export const SocketServer = (socket: Socket, io: Server) => {
 
   socket.on("getChatsHistory", async ({ userID }) => {
     try {
+
+      console.log("Entered");
       const conversations = await Conversations.find({
         participants: userID,
       })
       .sort({ lastMessageTime: -1 })
       .populate("doctor")
       .populate("patient")
+      console.log("searched");
   
       // Emit to the room with the user's ID
       io.to(userID).emit('conversationHistory', conversations);
+      console.log("emitted");
     } catch (error) {
       console.error("Error fetching conversations:", error);
   
