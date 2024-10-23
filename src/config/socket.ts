@@ -59,6 +59,11 @@ export const SocketServer = (socket: Socket, io: Server) => {
       let conversation = await Conversations.findOne({
         participants: { $all: [patientID, doctorID] },
       }).sort({ lastMessageTime: -1 });
+
+      if(conversation?.closed === true ){
+        io.to(patientID).emit('chatClosed', conversation);
+        return
+      }
   
       const currentDate = new Date();
   
