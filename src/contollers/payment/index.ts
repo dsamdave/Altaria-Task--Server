@@ -12,7 +12,7 @@ const paymentCtrl = {
         currency,
         metadata: { email, tx_ref },
       });
-      res.status(200).json({ clientSecret: paymentIntent.client_secret });
+      res.status(200).json({ clientSecret: paymentIntent.client_secret, paymentIntent });
     } catch (error) {
       res.status(500).json({ message: "Error creating payment intent" });
     }
