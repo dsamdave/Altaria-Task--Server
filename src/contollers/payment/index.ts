@@ -5,21 +5,14 @@ const stripe = require('stripe')(`${process.env.STRIPE_KEEY}`);
 
 const paymentCtrl = {
   createPaymentIntent: async (req: IReqAuth, res: Response) => {
-
-    // if (!req.user){
-
-    //     return res.status(401).json({ message: "Invalid Authentication." });
-    // }
-
     const { amount, currency, email, tx_ref } = req.body;
-
     try {
-        const paymentIntent = await stripe.paymentIntents.create({
-            amount,
-            currency,
-            metadata: { email, tx_ref },
-          });
-          res.status(200).json({ clientSecret: paymentIntent.client_secret });
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount,
+        currency,
+        metadata: { email, tx_ref },
+      });
+      res.status(200).json({ clientSecret: paymentIntent.client_secret });
     } catch (error) {
       res.status(500).json({ message: "Error creating payment intent" });
     }
