@@ -17,6 +17,7 @@ interface IAppointment extends Document {
   time: string;
 
   patientType: string;
+  meetingLink: string;
 
   status: "Pending" | "Accepted" | "Declined" | "Concluded";
 
@@ -51,6 +52,7 @@ const appointmentSchema = new Schema<IAppointment>(
     time: { type: String, required: true },
 
     patientType: { type: String, required: true },
+    meetingLink: { type: String, default: "" },
 
     status: {
       type: String,

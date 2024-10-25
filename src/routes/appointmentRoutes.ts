@@ -35,6 +35,20 @@ router.post('/update-appointments-status/:id', auth, appointmentCtrl.updateAppoi
 
 
 
+router.get('/auth/zoom', appointmentCtrl.authZoom)
+ 
+router.get('/callback', appointmentCtrl.zoomCallBack)
+
+router.get('/zoom-refreshToken', appointmentCtrl.zoomRefreshToken)
+
+router.post('/zoom-refreshToken', appointmentCtrl.saveZoomRefreshToken)
+
+router.get('/get-meeting-link', appointmentCtrl.getMeetingLink)
+
+
+
+
+
 
 
 

@@ -1,9 +1,12 @@
 import { Request, response, Response, NextFunction } from "express";
 import { IReqAuth } from "../../types/express";
-import { checkPatientType, pagination } from "../../utilities/utils";
+import { checkPatientType, formatDate, pagination } from "../../utilities/utils";
 // import Appointments from "../../models/appointment";
 import Users from "../../models/userModel";
 import Appointments from "../../models/appointment";
+import ZoomVariables from "../../models/appointment/ZoomVariablesModel";
+import axios from "axios"
+import { getZoomMeetingLink } from "../../utilities/zoomIntegration";
 
 const appointmentCtrl = {
   getNextAppointmentsAdmin: async (req: IReqAuth, res: Response) => {
@@ -179,10 +182,11 @@ const appointmentCtrl = {
 
       const patientType = await checkPatientType(id);
 
-      const { forSomeOne, firstName, lastName, gender, phone, dOB, ...rest } =
+      const { forSomeOne, firstName, lastName, gender, phone, dOB, date, ...rest } =
         req.body;
 
       const appointmentData = {
+        date,
         ...rest,
         patientType,
         user: id,
@@ -206,6 +210,17 @@ const appointmentCtrl = {
       await Users.findByIdAndUpdate(id, {
         $push: { "patientInfo.appointments": savedAppointment._id },
       });
+
+      const patientBookedFor = forSomeOne ? `${firstName} ${lastName}` : `${req.user?.firstName} ${req.user?.lastName}`
+
+      const zoomMeetingLink = await getZoomMeetingLink(
+        "ExpatDocOnline Meeting",
+        formatDate(date),
+        `${patientBookedFor}'s consulation with ExpatDocOnline`,
+      )
+
+      savedAppointment.meetingLink = zoomMeetingLink
+      await savedAppointment.save();
 
       return res.status(200).json({
         message: "Successful",
@@ -352,13 +367,129 @@ const appointmentCtrl = {
     }
   },
 
-  example: async (req: IReqAuth, res: Response, next: NextFunction) => {
+
+  authZoom: async (req: Request, res: Response) => {
     try {
-      const { user } = req;
+      const clientId = `${process.env.ZOOM_CLIENT_ID}`;
+      // const redirect_uri = encodeURIComponent(process.env.REDIRECT_URI);
+      const redirect_uri = encodeURIComponent(
+        `http://localhost:8082/api/callback`
+      );
+      const responseType = "code";
+      const authorizationUrl = `https://zoom.us/oauth/authorize?response_type=${responseType}&client_id=${clientId}&redirect_uri=${redirect_uri}`;
+
+      res.redirect(authorizationUrl);
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  },
+
+  zoomCallBack: async (req: Request, res: Response) => {
+    try {
+      const code = req.query.code;
+
+      if (!code) {
+        return res.status(400).send("No code provided");
+      }
+
+      // console.log({ code }); 
+
+      const response = await axios.post("https://zoom.us/oauth/token", null, {
+        params: {
+          grant_type: "authorization_code",
+          code,
+          redirect_uri: `${process.env.REDIRECT_URI}`, 
+        },
+        headers: {
+          Authorization: `Basic ${Buffer.from(
+            `${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`
+          ).toString("base64")}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      });
+
+      res.json({ response: response.data, code });
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  },
+
+  zoomRefreshToken: async (req: Request, res: Response) => {
+    try {
+      // const refresh_token = req.query.refreshToken;
+
+      // Zoom's refresh tokens expire after 15 years by default. However, each time you use a refresh token to obtain a new access token, Zoom issues a new refresh token. This new refresh token must be saved, as the old one becomes invalid once a new one is issued.
+
+      const zoomVariables = await ZoomVariables.findOne();
+
+      // console.log({zoomVariables})
+
+      if (zoomVariables && zoomVariables.zoomRefreshToken) {
+        const refresh_token = zoomVariables.zoomRefreshToken;
+
+        const response = await axios.post("https://zoom.us/oauth/token", null, {
+          params: {
+            grant_type: "refresh_token",
+            refresh_token,
+          },
+          headers: {
+            Authorization: `Basic ${Buffer.from(
+              `${process.env.ZOOM_CLIENT_ID}:${process.env.ZOOM_CLIENT_SECRET}`
+            ).toString("base64")}`,
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+        });
+  
+        return res.json(response.data);
+      }
+      return res.json({message: "TOKEN NOT FOUND."});
+
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  },
+
+  saveZoomRefreshToken: async (req: Request, res: Response) => {
+    try {
+      const { zoomRefreshToken } = req.body;
+
+        let existingToken = await ZoomVariables.findOne();
+
+        if (existingToken) {
+
+          existingToken.zoomRefreshToken = zoomRefreshToken;
+            await existingToken.save();
+        } else {
+
+          existingToken = new ZoomVariables({ zoomRefreshToken });
+            await existingToken.save();
+        }
+
+        return res.status(200).json({
+            message: "Successful",
+            result: existingToken,
+        });
+
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
+    }
+  },
+
+  getMeetingLink: async (req: IReqAuth, res: Response, next: NextFunction) => {
+    try {
+
+      const zoomMeetingLink = await getZoomMeetingLink(
+        "ExpatDocOnline Meeting",
+        "2024-06-06T23:00:00.000Z",
+        ` David's consulation with ExpatDocOnline`,
+      )
 
       res.status(201).json({
         message: "Successful",
-        user,
+        zoomMeetingLink,
       });
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });
