@@ -168,7 +168,7 @@ export const SocketServer = (socket: Socket, io: Server) => {
       console.log("searched");
   
       // Emit to the room with the user's ID
-      io.to(userID).emit('conversationHistory', conversations);
+      socket.to(userID).emit('conversationHistory', conversations);
       console.log("emitted");
     } catch (error) {
       console.error("Error fetching conversations:", error);
