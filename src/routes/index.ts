@@ -7,6 +7,7 @@ import messagesRoutes from "./messagesRoutes"
 import userRoutes from "./userRoutes"
 import paymentRoutes from "./paymentRoutes"
 import adminRoutes from "./adminRoutes"
+import newsletterRoutes from "./newsletterRoutes"
 
 const routes = [
     comingSoonRoutes,
@@ -16,7 +17,8 @@ const routes = [
     messagesRoutes,
     userRoutes,
     paymentRoutes,
-    adminRoutes
+    adminRoutes,
+    newsletterRoutes
 
 ]
 
