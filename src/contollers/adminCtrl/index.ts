@@ -9,6 +9,7 @@ interface MonthlyCount {
   month: string;
   totalAccepted: number;
   totalDeclined: number;
+  totalConcluded: number;
 }
 
 const monthNames = [
@@ -42,6 +43,7 @@ const adminCtrl = {
       const result = appointments.reduce<{
         accepted: Record<number, number>;
         declined: Record<number, number>;
+        concluded: Record<number, number>;
       }>(
         (acc, appointment) => {
           const monthIndex = getMonthIndex(appointment.createdAt);
@@ -53,17 +55,23 @@ const adminCtrl = {
           if (!acc.declined[monthIndex]) {
             acc.declined[monthIndex] = 0;
           }
+          if (!acc.concluded[monthIndex]) {
+            acc.concluded[monthIndex] = 0;
+          }
       
           // Count based on status
           if (appointment.status === "Concluded") {
-            acc.accepted[monthIndex] += 1;
+            acc.concluded[monthIndex] += 1;
           } else if ( appointment.status === "Declined") {
             acc.declined[monthIndex] += 1;
+          
+          } else if ( appointment.status === "Accepted") {
+            acc.accepted[monthIndex] += 1;
           }
       
           return acc;
         },
-        { accepted: {}, declined: {} }
+        { accepted: {}, declined: {}, concluded: {} }
       );
 
 
@@ -71,12 +79,14 @@ const adminCtrl = {
       const labels: string[] = [];
       const acceptedCounts: number[] = [];
       const declinedCounts: number[] = [];
+      const concludedCounts: number[] = [];
 
       for (let i = 0; i < 12; i++) {
-        if (result.accepted[i] !== undefined || result.declined[i] !== undefined) {
+        if (result.accepted[i] !== undefined || result.declined[i] !== undefined || result.concluded[i] !== undefined) {
           labels.push(monthNames[i]);
           acceptedCounts.push(result.accepted[i] || 0);
           declinedCounts.push(result.declined[i] || 0);
+          concludedCounts.push(result.concluded[i] || 0);
         }
       }
 
@@ -85,7 +95,7 @@ const adminCtrl = {
         message: "Successful",
         details: {
           appointments: {
-            labels, acceptedCounts, declinedCounts
+            labels, acceptedCounts, declinedCounts, concludedCounts
           },
           totalDoctors,
           totalPatients,
