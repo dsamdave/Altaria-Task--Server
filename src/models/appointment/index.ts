@@ -33,6 +33,8 @@ interface IAppointment extends Document {
     phone: string;
     dOB: string;
   };
+  createdAt?: any; 
+  updatedAt?: Date;
 }
 
 // Define the schema
