@@ -6,6 +6,8 @@ export interface IUser extends Document {
   patientID: string;
   phoneNumber: string;
   email: string;
+  otp: string | undefined
+  otpExpires: Date | undefined
   password: string;
 
   role: string;
@@ -392,6 +394,13 @@ const UserSchema: Schema = new Schema({
   },
   email: {
     type: String,
+  },
+  otp: {
+    type: String,
+  },
+  otpExpires: {
+    type: Date,
+    default: null
   },
   patientID: {
     type: String,

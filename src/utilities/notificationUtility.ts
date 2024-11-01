@@ -4,6 +4,19 @@ import twilio from 'twilio';
 const { TWILIO_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } = process.env;
 
 
+export function generateOTP(length: number = 4, expiresInMinutes: number = 10) {
+  const digits = '0123456789';
+  let otp = '';
+  for (let i = 0; i < length; i++) {
+    otp += digits[Math.floor(Math.random() * digits.length)];
+  }
+
+  const otpExpires = new Date(Date.now() + expiresInMinutes * 60 * 1000);  
+
+  return { otp, otpExpires };
+}
+
+
 
 export const sendOTPEMail = async (
   userEmail: string,
@@ -70,5 +83,24 @@ export const sendOTPSMS = async (
     throw new Error('Unable to send SMS. Please try again later.');
   }
 };
+
+export const sendOTPToEmail = async (to: string, otp: string): Promise<void> => {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail', 
+    auth: {
+      user: `${process.env.ADMIN_EMAIL}`, 
+      pass: `${process.env.ADMIN_EMAIL_PASSWORD}`,
+    },
+  });
+
+  const mailOptions = {
+    from: `${process.env.ADMIN_EMAIL}`, 
+    to,
+    subject: 'Your OTP Code',
+    text: `Your OTP code is ${otp}. It will expire in 10 minutes.`,
+  };
+
+  await transporter.sendMail(mailOptions);
+}
 
 

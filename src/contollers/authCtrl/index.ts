@@ -12,8 +12,8 @@ import RefreshToken from "../../models/refreshToken";
 import ComingSoon from "../../models/comingSoonModel";
 import { jayDoubleUUTeeCCkrit } from "../../config/vars";
 import { IReqAuth } from "../../types/express";
-import { generateOTP, generateTokens } from "../../utilities/tokenUtils";
-import { sendOTPEMail, sendOTPSMS } from "../../utilities/notificationUtility";
+import { generateTokens } from "../../utilities/tokenUtils";
+import { generateOTP, sendOTPEMail, sendOTPSMS, sendOTPToEmail } from "../../utilities/notificationUtility";
 import { hashPassword } from "../../utilities/passwordUtility";
 import { generateUniquePatientID } from "../../utilities/utils";
 
@@ -37,7 +37,10 @@ const authCtrl = {
 
       const hashedPassword = await hashPassword(password, 12)
 
-      const user: IUser = new Users({email, patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName, longitude, latitude });
+      const {otp, otpExpires} = generateOTP();
+      await sendOTPToEmail(email, otp);
+
+      const user: IUser = new Users({email, patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName, longitude, latitude, otp, otpExpires});
       await user.save();
 
       res.status(201).json({
@@ -46,6 +49,34 @@ const authCtrl = {
       });
     } catch (err: any) {
       res.status(500).json({ message: err.message });
+    }
+  },
+
+  verifyOtp: async (req: Request, res: Response) => {
+    const { identifier, otp } = req.body;
+  
+    try {
+      const user = await Users.findOne({ email: identifier });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+  
+      if (!user.otp || user.otp !== otp) {
+        return res.status(400).json({ message: 'Invalid OTP.' });
+      }
+  
+      if (user.otpExpires && user.otpExpires < new Date()) {
+        return res.status(400).json({ message: 'OTP has expired.' });
+      }
+  
+      user.otp = undefined;
+      user.otpExpires = undefined;
+      await user.save();
+  
+      return res.status(200).json({ message: 'Successful.' });
+    } catch (err: any) {
+      return res.status(500).json({ message: err.message });
     }
   },
 
@@ -139,7 +170,7 @@ const authCtrl = {
     }
   },
 
-  sendOTP: async (req: IReqAuth, res: Response, next: NextFunction) => {
+  requestOTP: async (req: IReqAuth, res: Response, next: NextFunction) => {
     try {
       const { identifier } = req.body;
       const user: IUser | null = await Users.findOne({
@@ -150,24 +181,15 @@ const authCtrl = {
         return res.status(400).json({ message: "User not found." });
       }
 
-      const otp = generateOTP();
-      const expiryDate = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const {otp, otpExpires} = generateOTP();
+      await sendOTPToEmail(identifier, otp);
 
-      await new OTP({
-        userID: user._id,
-        otp,
-        expiryDate,
-      }).save();
+      user.otp = otp
+      user.otpExpires = otpExpires
 
-      // if (user.email === identifier) {
-      //   // Send OTP via email
-      //   await sendOTPEMail(user.email, otp);
-      // } else if (user.phoneNumber === identifier) {
-      //   // Send OTP via SMS
-      //   await sendOTPSMS(user.phoneNumber, otp);
-      // }
+      await user.save()
 
-      res.status(200).json({ message: "Successful", otp });
+      res.status(200).json({ message: "Successful" });
 
 
     } catch (err: any) {
@@ -186,22 +208,13 @@ const authCtrl = {
         return res.status(400).json({ message: "User not found." });
       }
 
-      const otp = generateOTP();
-      const expiryDate = Date.now() + 10 * 60 * 1000; // 10 minutes
+      const {otp, otpExpires} = generateOTP();
+      await sendOTPToEmail(identifier, otp);
 
-      await new OTP({
-        userID: user._id,
-        otp,
-        expiryDate,
-      }).save();
+      user.otp = otp
+      user.otpExpires = otpExpires
 
-      // if (user.email === identifier) {
-      //   // Send OTP via email
-      //   await sendOTPEMail(user.email, otp);
-      // } else if (user.phoneNumber === identifier) {
-      //   // Send OTP via SMS
-      //   await sendOTPSMS(user.phoneNumber, otp);
-      // }
+      await user.save()
 
       res.status(200).json({ message: "Successful", otp });
 
@@ -210,46 +223,46 @@ const authCtrl = {
     }
   },
 
-  verifyOTP: async (
-    req: IReqAuth,
-    res: Response,
-    next: NextFunction
-  ) => {
-    try {
-      const { identifier, otp } = req.body;
+  // verifyOTP: async (
+  //   req: IReqAuth,
+  //   res: Response,
+  //   next: NextFunction
+  // ) => {
+  //   try {
+  //     const { identifier, otp } = req.body;
 
-      const user: IUser | null = await Users.findOne({
-        $or: [{ email: identifier }, { phoneNumber: identifier }],
-      });
+  //     const user: IUser | null = await Users.findOne({
+  //       $or: [{ email: identifier }, { phoneNumber: identifier }],
+  //     });
 
-      if (!user) {
-        return res
-          .status(400)
-          .json({ message: "User account does not exist." });
-      }
+  //     if (!user) {
+  //       return res
+  //         .status(400)
+  //         .json({ message: "User account does not exist." });
+  //     }
 
-      const otpRecord = await OTP.findOne({
-        userID: user._id,
-        otp,
-        expiryDate: { $gt: Date.now() },
-      });
+  //     const otpRecord = await OTP.findOne({
+  //       userID: user._id,
+  //       otp,
+  //       expiryDate: { $gt: Date.now() },
+  //     });
 
-      if (!otpRecord) {
-        return res
-          .status(400)
-          .json({ message: "OTP is invalid or has expired." });
-      }
+  //     if (!otpRecord) {
+  //       return res
+  //         .status(400)
+  //         .json({ message: "OTP is invalid or has expired." });
+  //     }
 
-      await OTP.deleteOne({ _id: otpRecord._id });
+  //     await OTP.deleteOne({ _id: otpRecord._id });
 
-      res.status(201).json({
-        message: "Successful",
-        user,
-      });
-    } catch (err: any) {
-      res.status(500).json({ message: "Server error.", error: err.message });
-    }
-  },
+  //     res.status(201).json({
+  //       message: "Successful",
+  //       user,
+  //     });
+  //   } catch (err: any) {
+  //     res.status(500).json({ message: "Server error.", error: err.message });
+  //   }
+  // },
 
   resetPasswordWithOTP: async (
     req: IReqAuth,
@@ -443,7 +456,7 @@ const authCtrl = {
 
       const otp = generateOTP();
 
-        await sendOTPSMS(to, otp)
+        // await sendOTPSMS(to, otp)
 
       res.status(201).json({
         message: "User registered successfully.",

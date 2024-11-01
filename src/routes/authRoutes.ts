@@ -13,7 +13,9 @@ router.post('/login', validateLogin, authCtrl.login)
 
 router.post('/refresh-token', authCtrl.refreshToken)
 
-router.post('/verify-OTP', authCtrl.verifyOTP)
+router.post('/verify-OTP', authCtrl.verifyOtp)
+
+router.post('/request-OTP', authCtrl.requestOTP)
 
 router.post('/forgot-password', validateForgotPassword, authCtrl.forgotPassword)
 
