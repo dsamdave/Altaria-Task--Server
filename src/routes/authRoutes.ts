@@ -1,21 +1,21 @@
 
 import express from 'express'
 import authCtrl from '../contollers/authCtrl'
-import { validateForgotPassword, validateLogin, validateRegister, validateResetPassword } from '../middleware/validations/authValidations'
+import { validateForgotPassword, validateLogin, validateOTP, validateRegister, validateRequestOTP, validateResetPassword } from '../middleware/validations/authValidations'
 import auth from '../middleware/auth'
 
 
 const router = express.Router()
 
-router.post('/register', authCtrl.register)
+router.post('/register', validateRegister, authCtrl.register)
 
 router.post('/login', validateLogin, authCtrl.login)
 
 router.post('/refresh-token', authCtrl.refreshToken)
 
-router.post('/verify-OTP', authCtrl.verifyOtp)
+router.post('/verify-OTP', validateOTP, authCtrl.verifyOtp)
 
-router.post('/request-OTP', authCtrl.requestOTP)
+router.post('/request-OTP', validateRequestOTP, authCtrl.requestOTP)
 
 router.post('/forgot-password', validateForgotPassword, authCtrl.forgotPassword)
 

@@ -9,11 +9,11 @@ export const validateRegister = async (
 
   const errors = [];
 
-  // if (!email) {
-  //   errors.push("Please enter your email.");
-  // } else if (!validEmail(email)) {
-  //   errors.push("Email format is incorrect.");
-  // }
+  if (!email) {
+    errors.push("Please enter your email.");
+  } else if (!validEmail(email)) {
+    errors.push("Email format is incorrect.");
+  }
 
   if (!phoneNumber) {
     errors.push("Please enter your phone number.");
@@ -113,6 +113,47 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
   
     next();
   }
+
+
+
+  export const validateOTP = async (req: Request, res: Response, next: NextFunction) => {
+    const { identifier, otp } = req.body
+  
+    const errors = [];
+  
+    if(!identifier){
+      errors.push("Please enter your email or phone number.")
+    }
+  
+    if(!otp){
+      errors.push("Please enter your otp.")
+    }
+  
+    if(errors.length > 0) return res.status(400).json({message: errors})
+  
+    next();
+  }
+
+
+  export const validateRequestOTP = async (req: Request, res: Response, next: NextFunction) => {
+    const { identifier } = req.body
+  
+    const errors = [];
+  
+    if(!identifier){
+      errors.push("Please enter your email or phone number.")
+    }
+
+  
+    if(errors.length > 0) return res.status(400).json({message: errors})
+  
+    next();
+  }
+
+
+
+
+
 
 
 
