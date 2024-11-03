@@ -1,21 +1,16 @@
 import { Request, response, Response, NextFunction } from "express";
-import passport from "passport";
-import nodemailer from "nodemailer";
-import twilio from "twilio";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-import OTP from "../../models/otp";
 import Users, { IUser } from "../../models/userModel";
 import RefreshToken from "../../models/refreshToken";
 
-import ComingSoon from "../../models/comingSoonModel";
-import { jayDoubleUUTeeCCkrit } from "../../config/vars";
 import { IReqAuth } from "../../types/express";
 import { generateTokens } from "../../utilities/tokenUtils";
-import { generateOTP, sendOTPEMail, sendOTPSMS, sendOTPToEmail } from "../../utilities/notificationUtility";
+import { generateOTP, sendOTPToEmail } from "../../utilities/notificationUtility";
 import { hashPassword } from "../../utilities/passwordUtility";
 import { generateUniquePatientID } from "../../utilities/utils";
+import crypto from 'crypto';
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
@@ -62,14 +57,21 @@ const authCtrl = {
         return res.status(404).json({ message: 'User not found.' });
       }
   
-      if (!user.otp || user.otp !== otp) {
-        return res.status(400).json({ message: 'Invalid OTP.' });
-      }
-  
       if (user.otpExpires && user.otpExpires < new Date()) {
         return res.status(400).json({ message: 'OTP has expired.' });
       }
   
+      // Use a constant-time comparison for security
+      const isOtpValid = crypto.timingSafeEqual(
+        Buffer.from(user.otp || ''),
+        Buffer.from(otp || '')
+      );
+  
+      if (!isOtpValid) {
+        return res.status(400).json({ message: 'Invalid OTP.' });
+      }
+  
+      // Clear OTP and expiration after successful verification
       user.otp = undefined;
       user.otpExpires = undefined;
       await user.save();
@@ -182,12 +184,12 @@ const authCtrl = {
       }
 
       const {otp, otpExpires} = generateOTP();
-      await sendOTPToEmail(identifier, otp);
-
+      
       user.otp = otp
       user.otpExpires = otpExpires
-
       await user.save()
+
+      await sendOTPToEmail(identifier, otp);
 
       res.status(200).json({ message: "Successful" });
 
