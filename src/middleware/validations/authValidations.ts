@@ -56,6 +56,31 @@ export const validateLogin = async (req: Request, res: Response, next: NextFunct
   
 
 
+export const validateResetPasswordMobile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { identifier, password  } = req.body;
+
+  const errors = [];
+
+  if(!identifier){
+    errors.push("Please enter your email or phone number.")
+  }
+
+  if (!password) {
+    errors.push("Please enter a password.");
+  } else if (password.length < 6) {
+    errors.push("Please password must be 6 chars.");
+  }
+
+  if (errors.length > 0) return res.status(400).json({ message: errors });
+
+  next();
+};
+
+
 export const validateResetPassword = async (
   req: Request,
   res: Response,

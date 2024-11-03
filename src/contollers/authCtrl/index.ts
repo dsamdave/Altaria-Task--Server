@@ -273,6 +273,36 @@ const authCtrl = {
   //   }
   // },
 
+  resetPassword: async (
+    req: IReqAuth,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const { identifier, password } = req.body;
+
+      const user: IUser | null = await Users.findOne({
+        $or: [{ email: identifier }, { phoneNumber: identifier }],
+      });
+
+      if (!user) {
+        return res
+          .status(400)
+          .json({ message: "User account does not exist." });
+      }
+
+      user.password = await hashPassword(password, 12)
+
+      await user.save();
+
+      res.status(201).json({
+        message: "Successful",
+      });
+    } catch (err: any) {
+      res.status(500).json({ message: "Server error.", error: err.message });
+    }
+  },
+
   resetPasswordWithOTP: async (
     req: IReqAuth,
     res: Response,

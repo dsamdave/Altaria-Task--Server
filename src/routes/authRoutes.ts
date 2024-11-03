@@ -1,7 +1,7 @@
 
 import express from 'express'
 import authCtrl from '../contollers/authCtrl'
-import { validateForgotPassword, validateLogin, validateOTP, validateRegister, validateRequestOTP, validateResetPassword } from '../middleware/validations/authValidations'
+import { validateForgotPassword, validateLogin, validateOTP, validateRegister, validateRequestOTP, validateResetPassword, validateResetPasswordMobile } from '../middleware/validations/authValidations'
 import auth from '../middleware/auth'
 
 
@@ -20,6 +20,8 @@ router.post('/request-OTP', validateRequestOTP, authCtrl.requestOTP)
 router.post('/forgot-password', validateForgotPassword, authCtrl.forgotPassword)
 
 router.post('/reset-password', validateResetPassword, authCtrl.resetPasswordWithOTP)
+
+router.post('/reset-password-mobile', validateResetPasswordMobile, authCtrl.resetPassword)
 
 router.post('/update-basic-info', auth, authCtrl.updateBasicInfo)
 
