@@ -109,7 +109,7 @@ const authCtrl = {
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordMatch)
-        return res.status(400).json({ message: "invalid phone number or password!" });
+        return res.status(400).json({ message: "invalid email, phone number or password!" });
 
       const { accessToken, refreshToken } = await generateTokens(
         user,
@@ -218,14 +218,14 @@ const authCtrl = {
       }
 
       const {otp, otpExpires} = generateOTP();
-      await sendOTPToEmail(identifier, otp);
-
+      
       user.otp = otp
       user.otpExpires = otpExpires
-
       await user.save()
 
-      res.status(200).json({ message: "Successful", otp });
+      await sendOTPToEmail(identifier, otp);
+
+      res.status(200).json({ message: "Successful"});
 
     } catch (err) {
       next(err);
@@ -279,7 +279,7 @@ const authCtrl = {
     next: NextFunction
   ) => {
     try {
-      const { identifier, password } = req.body;
+      const { identifier, password, otp } = req.body;
 
       const user: IUser | null = await Users.findOne({
         $or: [{ email: identifier }, { phoneNumber: identifier }],
@@ -291,13 +291,27 @@ const authCtrl = {
           .json({ message: "User account does not exist." });
       }
 
+      if (user.otpExpires && user.otpExpires < new Date()) {
+        return res.status(400).json({ message: 'OTP has expired.' });
+      }
+  
+      const isOtpValid = crypto.timingSafeEqual(
+        Buffer.from(user.otp || ''),
+        Buffer.from(otp || '')
+      );
+  
+      if (!isOtpValid) {
+        return res.status(400).json({ message: 'Invalid OTP.' });
+      }
+
       user.password = await hashPassword(password, 12)
 
+      user.otp = undefined;
+      user.otpExpires = undefined;
       await user.save();
 
       res.status(201).json({
         message: "Successful",
-        user,
       });
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });

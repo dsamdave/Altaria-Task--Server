@@ -61,7 +61,7 @@ export const validateResetPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { identifier, password } = req.body;
+  const { identifier, password, otp } = req.body;
 
   const errors = [];
 
@@ -69,6 +69,9 @@ export const validateResetPassword = async (
     errors.push("Please enter your email or phone number.")
   }
 
+  if(!otp){
+    errors.push("Please enter your otp.")
+  }
 
   if (!password) {
     errors.push("Please enter a password.");
