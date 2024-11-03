@@ -22,6 +22,8 @@ export interface IUser extends Document {
   latitude: number;
   longitude: number;
 
+  verified: boolean
+
 
   patientInfo: {
 
@@ -429,6 +431,8 @@ const UserSchema: Schema = new Schema({
   lastName: stringDefault,
   country: stringDefault,
   state: stringDefault,
+
+  verified: {type: Boolean, default: false},
 
 
   basicInformation : basicInfoSchema,

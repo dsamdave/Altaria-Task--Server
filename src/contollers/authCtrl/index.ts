@@ -72,11 +72,12 @@ const authCtrl = {
       }
   
       // Clear OTP and expiration after successful verification
+      user.verified = true
       user.otp = undefined;
       user.otpExpires = undefined;
       await user.save();
   
-      return res.status(200).json({ message: 'Successful.' });
+      return res.status(200).json({ message: 'Successful' });
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
@@ -96,6 +97,12 @@ const authCtrl = {
         return res
           .status(404)
           .json({ message: "This user account does not exist." });
+
+      if(!user.verified){
+        return res
+          .status(400)
+          .json({ message: "This user account is not verified." });
+      }
 
     
 
