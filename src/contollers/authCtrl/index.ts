@@ -7,21 +7,33 @@ import RefreshToken from "../../models/refreshToken";
 
 import { IReqAuth } from "../../types/express";
 import { generateTokens } from "../../utilities/tokenUtils";
-import { generateOTP, sendOTPToEmail } from "../../utilities/notificationUtility";
+import {
+  generateOTP,
+  sendOneOnOneConsultationEMailToDoctor,
+  sendOneOnOneConsultationEMailToUser,
+  sendOTPToEmail,
+} from "../../utilities/notificationUtility";
 import { hashPassword } from "../../utilities/passwordUtility";
 import { generateUniquePatientID } from "../../utilities/utils";
-import crypto from 'crypto';
+import crypto from "crypto";
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
-
-    const {  phoneNumber, password, country, state, firstName, lastName, longitude, latitude, email } = req.body;
+    const {
+      phoneNumber,
+      password,
+      country,
+      state,
+      firstName,
+      lastName,
+      longitude,
+      latitude,
+      email,
+    } = req.body;
     try {
       const existingUser = await Users.findOne({
-        $or: [
-          { email }, 
-          { phoneNumber }],
-      });  
+        $or: [{ email }, { phoneNumber }],
+      });
       if (existingUser) {
         return res
           .status(400)
@@ -30,12 +42,25 @@ const authCtrl = {
 
       const patientID = await generateUniquePatientID();
 
-      const hashedPassword = await hashPassword(password, 12)
+      const hashedPassword = await hashPassword(password, 12);
 
-      const {otp, otpExpires} = generateOTP();
+      const { otp, otpExpires } = generateOTP();
       await sendOTPToEmail(email, otp);
 
-      const user: IUser = new Users({email, patientID, phoneNumber, password: hashedPassword, country, state, firstName, lastName, longitude, latitude, otp, otpExpires});
+      const user: IUser = new Users({
+        email,
+        patientID,
+        phoneNumber,
+        password: hashedPassword,
+        country,
+        state,
+        firstName,
+        lastName,
+        longitude,
+        latitude,
+        otp,
+        otpExpires,
+      });
       await user.save();
 
       res.status(201).json({
@@ -49,41 +74,39 @@ const authCtrl = {
 
   verifyOtp: async (req: Request, res: Response) => {
     const { identifier, otp } = req.body;
-  
+
     try {
       const user = await Users.findOne({ email: identifier });
-  
+
       if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
+        return res.status(404).json({ message: "User not found." });
       }
-  
+
       if (user.otpExpires && user.otpExpires < new Date()) {
-        return res.status(400).json({ message: 'OTP has expired.' });
+        return res.status(400).json({ message: "OTP has expired." });
       }
-  
+
       // Use a constant-time comparison for security
       const isOtpValid = crypto.timingSafeEqual(
-        Buffer.from(user.otp || ''),
-        Buffer.from(otp || '')
+        Buffer.from(user.otp || ""),
+        Buffer.from(otp || "")
       );
-  
+
       if (!isOtpValid) {
-        return res.status(400).json({ message: 'Invalid OTP.' });
+        return res.status(400).json({ message: "Invalid OTP." });
       }
-  
+
       // Clear OTP and expiration after successful verification
-      user.verified = true
+      user.verified = true;
       user.otp = undefined;
       user.otpExpires = undefined;
       await user.save();
-  
-      return res.status(200).json({ message: 'Successful' });
+
+      return res.status(200).json({ message: "Successful" });
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
   },
-
-
 
   login: async (req: IReqAuth, res: Response) => {
     try {
@@ -98,23 +121,20 @@ const authCtrl = {
           .status(404)
           .json({ message: "This user account does not exist." });
 
-      if(!user.verified){
+      if (!user.verified) {
         return res
           .status(400)
           .json({ message: "This user account is not verified." });
       }
 
-    
-
       const passwordMatch = await bcrypt.compare(password, user.password);
 
       if (!passwordMatch)
-        return res.status(400).json({ message: "invalid email, phone number or password!" });
+        return res
+          .status(400)
+          .json({ message: "invalid email, phone number or password!" });
 
-      const { accessToken, refreshToken } = await generateTokens(
-        user,
-        res,
-      );
+      const { accessToken, refreshToken } = await generateTokens(user, res);
 
       return res.status(200).json({
         message: "Successful",
@@ -151,28 +171,24 @@ const authCtrl = {
       }
 
       const { accessToken, refreshToken: newRefreshToken } =
-        await generateTokens(user, res );
+        await generateTokens(user, res);
 
       existingToken.token = newRefreshToken;
       existingToken.expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
       await existingToken.save();
 
       if (req.body.isMobile) {
-        res
-          .status(200)
-          .json({
-            message: "Successful",
-            accessToken,
-            refreshToken: newRefreshToken,
-          });
+        res.status(200).json({
+          message: "Successful",
+          accessToken,
+          refreshToken: newRefreshToken,
+        });
       } else {
-        res
-          .status(200)
-          .json({
-            message: "Successful",
-            accessToken,
-            refreshToken: newRefreshToken,
-          });
+        res.status(200).json({
+          message: "Successful",
+          accessToken,
+          refreshToken: newRefreshToken,
+        });
       }
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });
@@ -190,17 +206,15 @@ const authCtrl = {
         return res.status(400).json({ message: "User not found." });
       }
 
-      const {otp, otpExpires} = generateOTP();
-      
-      user.otp = otp
-      user.otpExpires = otpExpires
-      await user.save()
+      const { otp, otpExpires } = generateOTP();
+
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+      await user.save();
 
       await sendOTPToEmail(identifier, otp);
 
       res.status(200).json({ message: "Successful" });
-
-
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
@@ -217,16 +231,15 @@ const authCtrl = {
         return res.status(400).json({ message: "User not found." });
       }
 
-      const {otp, otpExpires} = generateOTP();
-      
-      user.otp = otp
-      user.otpExpires = otpExpires
-      await user.save()
+      const { otp, otpExpires } = generateOTP();
+
+      user.otp = otp;
+      user.otpExpires = otpExpires;
+      await user.save();
 
       await sendOTPToEmail(identifier, otp);
 
-      res.status(200).json({ message: "Successful"});
-
+      res.status(200).json({ message: "Successful" });
     } catch (err) {
       next(err);
     }
@@ -273,11 +286,7 @@ const authCtrl = {
   //   }
   // },
 
-  resetPassword: async (
-    req: IReqAuth,
-    res: Response,
-    next: NextFunction
-  ) => {
+  resetPassword: async (req: IReqAuth, res: Response, next: NextFunction) => {
     try {
       const { identifier, password } = req.body;
 
@@ -291,7 +300,7 @@ const authCtrl = {
           .json({ message: "User account does not exist." });
       }
 
-      user.password = await hashPassword(password, 12)
+      user.password = await hashPassword(password, 12);
 
       await user.save();
 
@@ -322,19 +331,19 @@ const authCtrl = {
       }
 
       if (user.otpExpires && user.otpExpires < new Date()) {
-        return res.status(400).json({ message: 'OTP has expired.' });
-      }
-  
-      const isOtpValid = crypto.timingSafeEqual(
-        Buffer.from(user.otp || ''),
-        Buffer.from(otp || '')
-      );
-  
-      if (!isOtpValid) {
-        return res.status(400).json({ message: 'Invalid OTP.' });
+        return res.status(400).json({ message: "OTP has expired." });
       }
 
-      user.password = await hashPassword(password, 12)
+      const isOtpValid = crypto.timingSafeEqual(
+        Buffer.from(user.otp || ""),
+        Buffer.from(otp || "")
+      );
+
+      if (!isOtpValid) {
+        return res.status(400).json({ message: "Invalid OTP." });
+      }
+
+      user.password = await hashPassword(password, 12);
 
       user.otp = undefined;
       user.otpExpires = undefined;
@@ -382,7 +391,8 @@ const authCtrl = {
       const loggedInUser = req.user;
 
       const {
-        firstName, lastName,
+        firstName,
+        lastName,
         birthDate,
         gender,
         languages,
@@ -404,7 +414,8 @@ const authCtrl = {
           ],
         },
         {
-          firstName, lastName,
+          firstName,
+          lastName,
           basicInformation: {
             birthDate,
             gender,
@@ -419,7 +430,7 @@ const authCtrl = {
               contactEmergencyPhoneNumber,
               relationship,
             },
-            avatar
+            avatar,
           },
         },
         { new: true }
@@ -429,7 +440,6 @@ const authCtrl = {
         message: "Successful",
         application: updatedApplication,
       });
-
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
@@ -442,9 +452,7 @@ const authCtrl = {
 
       const loggedInUser = req.user;
 
-      const {
-        avatar
-      } = req.body;
+      const { avatar } = req.body;
 
       const user = await Users.findOneAndUpdate(
         {
@@ -454,16 +462,15 @@ const authCtrl = {
           ],
         },
         {
-          avatar
+          avatar,
         },
         { new: true }
       );
 
       return res.status(200).json({
         message: "Successful",
-        user
+        user,
       });
-
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
@@ -476,9 +483,7 @@ const authCtrl = {
 
       const loggedInUser = req.user;
 
-      const {
-        latitude, longitude
-      } = req.body;
+      const { latitude, longitude } = req.body;
 
       const updatedApplication = await Users.findOneAndUpdate(
         {
@@ -488,7 +493,8 @@ const authCtrl = {
           ],
         },
         {
-          latitude, longitude
+          latitude,
+          longitude,
         },
         { new: true }
       );
@@ -497,7 +503,6 @@ const authCtrl = {
         message: "Successful",
         application: updatedApplication,
       });
-
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
@@ -505,15 +510,34 @@ const authCtrl = {
 
   test: async (req: IReqAuth, res: Response, next: NextFunction) => {
     try {
-      const { to } = req.body;
+      // const { to } = req.body;
 
-      const otp = generateOTP();
+      // const otp = generateOTP();
 
-        // await sendOTPSMS(to, otp)
+      // await sendOTPSMS(to, otp)
+
+      await sendOneOnOneConsultationEMailToUser(
+        "davidsampson.ud@gmail.com",
+        "David",
+        "ExpatDoc Online",
+        "2024-10-30T00:00:00.000Z",
+        "10:30 AM",
+        15,
+        "https://zoom.us/j/123456789"
+      );
+
+      await sendOneOnOneConsultationEMailToDoctor(
+        "davidsampson.ud@gmail.com",
+        "David",
+        "ExpatDoc Online",
+        "2024-10-30T00:00:00.000Z",
+        "10:30 AM",
+        15,
+        "https://zoom.us/j/123456789"
+      );
 
       res.status(201).json({
-        message: "User registered successfully.",
-
+        message: "Email sent successfully.",
       });
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });

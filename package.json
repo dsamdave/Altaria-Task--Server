@@ -32,7 +32,8 @@
     "socket.io": "^4.7.5",
     "stripe": "^17.1.0",
     "twilio": "^5.2.0",
-    "webrtc-adapter": "^9.0.1"
+    "webrtc-adapter": "^9.0.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

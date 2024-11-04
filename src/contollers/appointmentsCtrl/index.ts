@@ -7,6 +7,8 @@ import Appointments from "../../models/appointment";
 import ZoomVariables from "../../models/appointment/ZoomVariablesModel";
 import axios from "axios"
 import { getZoomMeetingLink } from "../../utilities/zoomIntegration";
+import { validEmail } from "../../middleware/validations/authValidations";
+import { sendOneOnOneConsultationEMailToDoctor, sendOneOnOneConsultationEMailToUser } from "../../utilities/notificationUtility";
 
 const appointmentCtrl = {
   getNextAppointmentsAdmin: async (req: IReqAuth, res: Response) => {
@@ -182,11 +184,12 @@ const appointmentCtrl = {
 
       const patientType = await checkPatientType(id);
 
-      const { forSomeOne, firstName, lastName, gender, phone, dOB, date, ...rest } =
+      const { forSomeOne, firstName, lastName, gender, phone, dOB, date, time, ...rest } =
         req.body;
 
       const appointmentData = {
         date,
+        time,
         ...rest,
         patientType,
         user: id,
@@ -222,10 +225,38 @@ const appointmentCtrl = {
       savedAppointment.meetingLink = zoomMeetingLink
       await savedAppointment.save();
 
+
+      if (validEmail(req.user.email)) {
+        await sendOneOnOneConsultationEMailToUser(
+          req.user.email,
+          patientBookedFor,
+          "ExpatDoc Online",
+          date,
+          time,
+          15,
+          zoomMeetingLink
+        );
+      }
+
+      if (validEmail(`${process.env.ADMIN_EMAIL}`)) {
+        await sendOneOnOneConsultationEMailToDoctor(
+          req.user.email,
+          patientBookedFor,
+          "ExpatDoc Online",
+          date,
+          time,
+          15,
+          zoomMeetingLink
+        );
+      }
+
       return res.status(200).json({
         message: "Successful",
         appointment: savedAppointment,
       });
+
+
+
     } catch (err: any) {
       return res
         .status(500)

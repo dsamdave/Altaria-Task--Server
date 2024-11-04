@@ -9,6 +9,7 @@ import adminCtrl from '../contollers/adminCtrl';
 const router = express.Router()
 
 router.get('/analytics', auth, adminCtrl.getAnalytics);
+router.get('/export-waitlist', auth, adminCtrl.exportWaitLIst);
 
 
 

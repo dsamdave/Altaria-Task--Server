@@ -66,3 +66,27 @@ export function formatDate(date: Date | string): string {
 
   return `${year}-${month}-${day}`;
 }
+
+
+export const capitalizeEachWord = (str?: string) => {
+  if (!str) return '';
+  return str.split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+};
+
+export const formatDateWithOrdinal = (dateInput: string | Date): string => {
+  function getOrdinalSuffix(day: number): string {
+    if (day > 3 && day < 21) return 'th'; // covers 4th to 20th
+    switch (day % 10) {
+      case 1: return 'st';
+      case 2: return 'nd';
+      case 3: return 'rd';
+      default: return 'th';
+    }
+  }
+
+  const date: Date = (typeof dateInput === 'string' || typeof dateInput === 'number') ? new Date(dateInput) : dateInput;
+  const day: number = date.getUTCDate();
+  const month: string = date.toLocaleString('en-US', { month: 'long' });
+  const year: number = date.getUTCFullYear();
+  return `${day}${getOrdinalSuffix(day)} ${month} ${year}`;
+}
