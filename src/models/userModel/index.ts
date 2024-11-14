@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { numberDefault, stringDefault } from '../../types/schemaTypes';
 
 export interface IUser extends Document {
+  id: string;
   patientID: string;
   phoneNumber: string;
   email: string;
