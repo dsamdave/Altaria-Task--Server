@@ -16,6 +16,7 @@ import {
 import { hashPassword } from "../../utilities/passwordUtility";
 import { generateUniquePatientID } from "../../utilities/utils";
 import crypto from "crypto";
+import { createNotification } from "../../helpers/notification";
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
@@ -72,7 +73,7 @@ const authCtrl = {
     }
   },
 
-  verifyOtp: async (req: Request, res: Response) => {
+  verifyOtp: async (req: IReqAuth, res: Response) => {
     const { identifier, otp } = req.body;
 
     try {
@@ -102,7 +103,17 @@ const authCtrl = {
       user.otpExpires = undefined;
       await user.save();
 
+       await createNotification({
+        title: "Account verified",
+        message: "Congratulations, your account has been verified.",
+        type: "alert",
+        recipientId: req.user?.id,
+        recipientRole: "patient",
+        data: {},
+      });
+
       return res.status(200).json({ message: "Successful" });
+
     } catch (err: any) {
       return res.status(500).json({ message: err.message });
     }
@@ -349,6 +360,15 @@ const authCtrl = {
       user.otpExpires = undefined;
       await user.save();
 
+      await createNotification({
+        title: "Account Password Reset",
+        message: "Your account password has been changed.",
+        type: "alert",
+        recipientId: req.user?.id,
+        recipientRole: "patient",
+        data: {},
+      });
+
       res.status(201).json({
         message: "Successful",
       });
@@ -435,6 +455,15 @@ const authCtrl = {
         },
         { new: true }
       );
+
+      await createNotification({
+        title: "Account Bio Update",
+        message: "Your account profile was updated.",
+        type: "alert",
+        recipientId: req.user?.id,
+        recipientRole: "patient",
+        data: {},
+      });
 
       return res.status(200).json({
         message: "Successful",

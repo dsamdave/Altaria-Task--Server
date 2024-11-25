@@ -158,18 +158,18 @@ export const SocketServer = (socket: Socket, io: Server) => {
   socket.on("getChatsHistory", async ({ userID }) => {
     try {
 
-      console.log("Entered");
       const conversations = await Conversations.find({
+        // participants: "66ede5a622950de08dae5fef",
         participants: userID,
       })
       .sort({ lastMessageTime: -1 })
       .populate("doctor")
       .populate("patient")
-      console.log("searched");
+      console.log({conversations});
   
       // Emit to the room with the user's ID
-      socket.to(userID).emit('conversationHistory', conversations);
-      console.log("emitted");
+      io.to(userID).emit('conversationHistory', conversations);
+
     } catch (error) {
       console.error("Error fetching conversations:", error);
   

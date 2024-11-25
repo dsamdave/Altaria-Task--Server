@@ -3,6 +3,7 @@ import { IReqAuth } from "../../types/express";
 import Conversations from "../../models/messageModel/conversationModel";
 import Messages from "../../models/messageModel";
 import { startOfWeek, isSameWeek } from 'date-fns';
+import { createNotification } from "../../helpers/notification";
 
 
  
@@ -61,6 +62,19 @@ const messageCtrl = {
       });
   
       await newMessage.save();
+
+      if (!req.user) {
+
+        await createNotification({
+          title: `New Message`,
+          message: `Your have a new message from ExpatDoc Online.`,
+          type: "message",
+          recipientId: patientID,
+          recipientRole: "patient",
+          data: {},
+        });
+      }
+
   
       res.status(201).json({
         message: "Successful",

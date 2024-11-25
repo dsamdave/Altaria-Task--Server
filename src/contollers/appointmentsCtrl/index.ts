@@ -9,6 +9,7 @@ import axios from "axios"
 import { getZoomMeetingLink } from "../../utilities/zoomIntegration";
 import { validEmail } from "../../middleware/validations/authValidations";
 import { sendOneOnOneConsultationEMailToDoctor, sendOneOnOneConsultationEMailToUser } from "../../utilities/notificationUtility";
+import { createNotification } from "../../helpers/notification";
 
 const appointmentCtrl = {
   getNextAppointmentsAdmin: async (req: IReqAuth, res: Response) => {
@@ -250,6 +251,15 @@ const appointmentCtrl = {
         );
       }
 
+      await createNotification({
+        title: "Appointment Reminder",
+        message: "Appointment with ExpatDoc Online booked successfully.",
+        type: "appointment",
+        recipientId: req.user?.id,
+        recipientRole: "patient",
+        data: {},
+      });
+
       return res.status(200).json({
         message: "Successful",
         appointment: savedAppointment,
@@ -388,6 +398,16 @@ const appointmentCtrl = {
       if (!appointment) {
         res.status(404).json({ message: "Appointment not found" });
       } else {
+
+        await createNotification({
+          title: `Appointment ${status}`,
+          message: `Your appointment with ExpatDoc was ${status}.`,
+          type: "appointment",
+          recipientId: `${appointment.user}`,
+          recipientRole: "patient",
+          data: {},
+        });
+
         res.status(201).json({
           message: "Successful",
           appointment,
@@ -526,6 +546,8 @@ const appointmentCtrl = {
       res.status(500).json({ message: "Server error.", error: err.message });
     }
   },
+
+  
 };
 
 export default appointmentCtrl;
