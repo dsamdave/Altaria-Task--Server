@@ -9,7 +9,7 @@ export interface IMessage extends Document {
   patientID: string;
   doctorID: string;
   message: string;
-  attachments?: IAttachment[];
+  attachments?: string[];
   links?: string[];
   conversationID: string;
   recipient: Schema.Types.ObjectId;
@@ -24,7 +24,11 @@ const MessageSchema: Schema = new Schema(
     doctorID: { type: String, required: true },
 
     message: { type: String, required: true },
-    attachments: [{ url: String, filename: String }],
+    attachments: {
+      type: [String], 
+      required: false, 
+    },
+    // attachments: [{ url: String, filename: String }],
     links: [String],
 
     doctor: { type: Schema.Types.ObjectId, ref: "user", required: true },

@@ -165,7 +165,7 @@ export const SocketServer = (socket: Socket, io: Server) => {
       .sort({ lastMessageTime: -1 })
       .populate("doctor")
       .populate("patient")
-      console.log({conversations});
+      // console.log({conversations});
   
       // Emit to the room with the user's ID
       io.to(userID).emit('conversationHistory', conversations);
