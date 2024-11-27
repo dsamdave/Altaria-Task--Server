@@ -152,7 +152,7 @@ const basicInfoSchema: Schema = new Schema({
   contactInfo: {
     email: stringDefault,
     zipCode: stringDefault,
-    emergencyPhoneNumber: stringDefault,
+    phoneNumber: stringDefault,
     address: stringDefault,
   },
   emergencyContact: {
