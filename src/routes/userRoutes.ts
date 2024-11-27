@@ -10,6 +10,7 @@ import userCtrl from '../contollers/userCtrl'
 const router = express.Router()
 
 router.put('/basic-information/:patientID', auth, userCtrl.upsertBasicInformation);
+router.post('/basic-information/:patientID', auth, userCtrl.upsertBasicInformation);
 router.put('/health-metrics/:patientID', auth, userCtrl.upsertHealthMetrics);
 router.put('/condition/:patientID/:conditionID?', auth, userCtrl.upsertCondition);
 
