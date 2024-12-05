@@ -23,7 +23,7 @@ const MessageSchema: Schema = new Schema(
     patientID: { type: String, required: true },
     doctorID: { type: String, required: true },
 
-    message: { type: String, required: true },
+    message: { type: String, required: false },
     attachments: {
       type: [String], 
       required: false, 

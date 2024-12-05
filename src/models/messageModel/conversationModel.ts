@@ -13,7 +13,7 @@ export interface IConversation extends Document {
 
 const ConversationSchema: Schema = new Schema({
   participants: [{ type: String, required: true }],
-  lastMessage: { type: String, required: true },
+  lastMessage: { type: String, required: false },
   lastMessageTime: { type: Date, default: Date.now },
   doctor: { type: Schema.Types.ObjectId, ref: "user", required: true },
   patient: { type: Schema.Types.ObjectId, ref: "user", required: true },
