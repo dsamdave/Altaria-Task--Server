@@ -8,6 +8,7 @@ const {
   TWILIO_PHONE_NUMBER,
   ADMIN_EMAIL,
   ADMIN_EMAIL_PASSWORD,
+  BLACKNIGHT_EMAIL, BLACKNIGHT_EMAIL_PASSWORD
 } = process.env;
 
 const auth = {
@@ -159,7 +160,7 @@ export const sendOneOnOneConsultationEMailToUser = async (
             
             <p>Please make sure to mark your calendar and be ready for this valuable session.</p>
         
-            <p>If you have any questions or need to reschedule, please contact our support team at support@expatdoconline.ie as soon as possible.</p>
+            <p>If you have any questions or need to reschedule, please contact our support team at support@expatdoctoronline.ie as soon as possible.</p>
 
             <p>We look forward to providing you with an insightful and productive consultation. Thank you for choosing ExpatDoc Online.</p>
 
@@ -250,5 +251,67 @@ export const sendOneOnOneConsultationEMailToDoctor = async (
     return "Email sent successfully";
   } catch (error: any) {
     console.log(error);
+  }
+};
+
+
+export const SendTestEmail = async (userEmail: string) => {
+  try {
+
+    console.log({BLACKNIGHT_EMAIL, BLACKNIGHT_EMAIL_PASSWORD})
+
+
+    // let mailTransporter = nodemailer.createTransport({
+    //   host: "smtp.titan.email", // Titan SMTP host
+    //   port: 465,               // Secure SMTP port for Titan
+    //   secure: true,            // Use SSL
+    //   auth: {
+    //     user: BLACKNIGHT_EMAIL,         // Your Titan email address
+    //     pass: BLACKNIGHT_EMAIL_PASSWORD // Your Titan email password
+    //   }
+    // });
+
+    const mailTransporter = nodemailer.createTransport({
+      host: "smtp.titan.email",
+      port: 587,
+      secure: false,
+      auth: {
+        user: BLACKNIGHT_EMAIL,         // Your Titan email address
+        pass: BLACKNIGHT_EMAIL_PASSWORD // Your Titan email password
+      }
+      });
+
+    // let mailTransporter = nodemailer.createTransport({
+    //   host: "smtp.titan.email",
+    //   port: 587,
+    //   secure: false, // Use STARTTLS
+    //   auth: {
+    //     user: BLACKNIGHT_EMAIL,
+    //     pass: BLACKNIGHT_EMAIL_PASSWORD,
+    //   }, 
+    // });
+
+    // Email details
+    let mailDetails = {
+      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`, 
+      to: userEmail,                                     
+      subject: `Test Email`,
+      html: `
+            <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
+            <h2 style="text-align: center; text-transform: uppercase;color: #F8CA25">This is a test emailk</h2>
+
+            <p>Your OTP for password reset is: <strong>1234567890</strong>. It is valid for 10 minutes.</p>
+
+            <h3 style="margin-top: 50px;">Med-Tele Healthcare Admin</h3>
+            </div>
+            `,
+    };
+
+    // Send the email
+    const result = await mailTransporter.sendMail(mailDetails);
+    return "Email sent successfully";
+  } catch (error: any) {
+    console.error("Error sending email:", error.message);
+    throw new Error("Failed to send email");
   }
 };
