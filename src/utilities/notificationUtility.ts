@@ -47,7 +47,7 @@ export const sendOTPEMail = async (userEmail: string, otp: string) => {
       subject: `Password Reset OTP`,
       html: `
             <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
-            <h2 style="text-align: center; text-transform: uppercase;color: #F8CA25">Your OTP.</h2>
+            <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">Your OTP.</h2>
 
             <p >Your OTP for password reset is: ${otp}. It is valid for 10 minutes.</p>
             
@@ -112,8 +112,19 @@ export const sendOTPToEmail = async (
   const mailOptions = {
     from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
     to,
-    subject: "Your OTP Code",
-    text: `Your OTP code is ${otp}. It will expire in 10 minutes.`,
+    subject: "Your OTP",
+    html: `
+            <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
+            <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">Your OTP</h2>
+
+            <p >Your OTP is: ${otp}. It is valid for 10 minutes.</p>
+            
+          
+            
+
+            <h3 style="margin-top: 50px;">Med-Tele Healthcare Admin</h3>
+            
+                `,
   };
 
   const result = await mailTransporter.sendMail(mailOptions);
@@ -292,7 +303,7 @@ export const SendTestEmail = async (userEmail: string) => {
       subject: `Test Email`,
       html: `
             <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
-            <h2 style="text-align: center; text-transform: uppercase;color: #F8CA25">This is a test email</h2>
+            <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">This is a test email</h2>
 
             <p>Your OTP for password reset is: <strong>1234567890</strong>. It is valid for 10 minutes.</p>
 

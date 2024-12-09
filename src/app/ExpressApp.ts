@@ -7,7 +7,7 @@ import passport from 'passport';
 
 // Import the passport configuration
 import '../config/passport';
-import { SendTestEmail } from "../utilities/notificationUtility";
+import { sendOTPToEmail, SendTestEmail } from "../utilities/notificationUtility";
 
 export default async (app: Application) => {
   // Middleware
@@ -24,7 +24,7 @@ export default async (app: Application) => {
   app.use("/api", routes);
   app.get("/api/test-email", async (req, res)=>{
     console.log("entered")
-    await SendTestEmail("davidsampson.ud@gmail.com")
+    await sendOTPToEmail("davidsampson.ud@gmail.com", "7890")
     res.status(200).json({
       message: "Email Sent Successfully"
     });
