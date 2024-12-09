@@ -8,7 +8,8 @@ const {
   TWILIO_PHONE_NUMBER,
   ADMIN_EMAIL,
   ADMIN_EMAIL_PASSWORD,
-  BLACKNIGHT_EMAIL, BLACKNIGHT_EMAIL_PASSWORD
+  BLACKNIGHT_EMAIL,
+  BLACKNIGHT_EMAIL_PASSWORD,
 } = process.env;
 
 const auth = {
@@ -30,18 +31,18 @@ export function generateOTP(length: number = 4, expiresInMinutes: number = 10) {
 
 export const sendOTPEMail = async (userEmail: string, otp: string) => {
   try {
-    const { MED_TELE_EMAIL, MED_TELE_EMAIL_PASSWORD } = process.env;
 
-    let mailTransporter = nodemailer.createTransport({
-      service: "Gmail",
+    const mailTransporter = nodemailer.createTransport({
+      host: "smtp0101.titan.email",
+      port: 587,
       auth: {
-        user: `${MED_TELE_EMAIL}`,
-        pass: `${MED_TELE_EMAIL_PASSWORD}`,
+        user: BLACKNIGHT_EMAIL,
+        pass: BLACKNIGHT_EMAIL_PASSWORD,
       },
     });
 
     let mailDetails = {
-      from: `"Med-Tele Healthcare" <${MED_TELE_EMAIL}>`,
+      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
       to: `${userEmail}`,
       subject: `Password Reset OTP`,
       html: `
@@ -92,24 +93,6 @@ export const sendOTPSMS = async (
   }
 };
 
-export const sendOTPToEmail = async (
-  to: string,
-  otp: string
-): Promise<void> => {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth,
-  });
-
-  const mailOptions = {
-    from: `"ExpatDoc Online" <${ADMIN_EMAIL}>`,
-    to,
-    subject: "Your OTP Code",
-    text: `Your OTP code is ${otp}. It will expire in 10 minutes.`,
-  };
-
-  await transporter.sendMail(mailOptions);
-};
 
 export const sendOneOnOneConsultationEMailToUser = async (
   userEmail: string,
@@ -121,13 +104,18 @@ export const sendOneOnOneConsultationEMailToUser = async (
   meetingLink: string
 ) => {
   try {
-    let mailTransporter = nodemailer.createTransport({
-      service: "gmail",
-      auth,
+   
+    const mailTransporter = nodemailer.createTransport({
+      host: "smtp0101.titan.email",
+      port: 587,
+      auth: {
+        user: BLACKNIGHT_EMAIL,
+        pass: BLACKNIGHT_EMAIL_PASSWORD,
+      },
     });
 
     let mailDetails = {
-      from: `"ExpatDoc Online" <${ADMIN_EMAIL}>`,
+      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
       to: `${userEmail}`,
       subject: `Subject: Confirmation: Your One-on-One Consultation is Booked!`,
       html: `
@@ -182,7 +170,6 @@ export const sendOneOnOneConsultationEMailToUser = async (
   }
 };
 
-
 export const sendOneOnOneConsultationEMailToDoctor = async (
   userEmail: string,
   userName: string,
@@ -193,13 +180,18 @@ export const sendOneOnOneConsultationEMailToDoctor = async (
   meetingLink: string
 ) => {
   try {
-    let mailTransporter = nodemailer.createTransport({
-      service: "gmail",
-      auth,
+   
+    const mailTransporter = nodemailer.createTransport({
+      host: "smtp0101.titan.email",
+      port: 587,
+      auth: {
+        user: BLACKNIGHT_EMAIL,
+        pass: BLACKNIGHT_EMAIL_PASSWORD,
+      },
     });
 
     let mailDetails = {
-      from: `"ExpatDoc Online" <${ADMIN_EMAIL}>`,
+      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
       to: `${ADMIN_EMAIL}`,
       subject: `Subject: One-on-One Consultation Booked with ${userName}`,
       html: `
@@ -218,8 +210,8 @@ export const sendOneOnOneConsultationEMailToDoctor = async (
               <h2>Hello ${capitalizeEachWord(consultantName)},</h2>
 
             <p >A one-on-one consultation has been successfully booked with you by ${capitalizeEachWord(
-                userName
-              )}.</p>
+              userName
+            )}.</p>
 
             <h4>Consultation Details:</h4>
 
@@ -254,51 +246,24 @@ export const sendOneOnOneConsultationEMailToDoctor = async (
   }
 };
 
-
 export const SendTestEmail = async (userEmail: string) => {
   try {
-
-    console.log({BLACKNIGHT_EMAIL, BLACKNIGHT_EMAIL_PASSWORD})
-
-
-    // let mailTransporter = nodemailer.createTransport({
-    //   host: "smtp.titan.email", // Titan SMTP host
-    //   port: 465,               // Secure SMTP port for Titan
-    //   secure: true,            // Use SSL
-    //   auth: {
-    //     user: BLACKNIGHT_EMAIL,         // Your Titan email address
-    //     pass: BLACKNIGHT_EMAIL_PASSWORD // Your Titan email password
-    //   }
-    // });
-
     const mailTransporter = nodemailer.createTransport({
-      host: "smtp.titan.email",
+      host: "smtp0101.titan.email",
       port: 587,
-      secure: false,
       auth: {
-        user: BLACKNIGHT_EMAIL,         // Your Titan email address
-        pass: BLACKNIGHT_EMAIL_PASSWORD // Your Titan email password
-      }
-      });
+        user: BLACKNIGHT_EMAIL,
+        pass: BLACKNIGHT_EMAIL_PASSWORD,
+      },
+    });
 
-    // let mailTransporter = nodemailer.createTransport({
-    //   host: "smtp.titan.email",
-    //   port: 587,
-    //   secure: false, // Use STARTTLS
-    //   auth: {
-    //     user: BLACKNIGHT_EMAIL,
-    //     pass: BLACKNIGHT_EMAIL_PASSWORD,
-    //   }, 
-    // });
-
-    // Email details
     let mailDetails = {
-      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`, 
-      to: userEmail,                                     
+      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
+      to: userEmail,
       subject: `Test Email`,
       html: `
             <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
-            <h2 style="text-align: center; text-transform: uppercase;color: #F8CA25">This is a test emailk</h2>
+            <h2 style="text-align: center; text-transform: uppercase;color: #F8CA25">This is a test email</h2>
 
             <p>Your OTP for password reset is: <strong>1234567890</strong>. It is valid for 10 minutes.</p>
 
