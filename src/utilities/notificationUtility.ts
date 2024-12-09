@@ -93,6 +93,35 @@ export const sendOTPSMS = async (
   }
 };
 
+export const sendOTPToEmail = async (
+  to: string,
+  otp: string
+): Promise<void> => {
+
+  try{
+ 
+  const mailTransporter = nodemailer.createTransport({
+    host: "smtp0101.titan.email",
+    port: 587,
+    auth: {
+      user: BLACKNIGHT_EMAIL,
+      pass: BLACKNIGHT_EMAIL_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
+    to,
+    subject: "Your OTP Code",
+    text: `Your OTP code is ${otp}. It will expire in 10 minutes.`,
+  };
+
+  const result = await mailTransporter.sendMail(mailOptions);
+  
+} catch (error: any) {
+  console.log(error);
+}
+};
 
 export const sendOneOnOneConsultationEMailToUser = async (
   userEmail: string,
@@ -104,7 +133,7 @@ export const sendOneOnOneConsultationEMailToUser = async (
   meetingLink: string
 ) => {
   try {
-   
+    
     const mailTransporter = nodemailer.createTransport({
       host: "smtp0101.titan.email",
       port: 587,
@@ -180,7 +209,7 @@ export const sendOneOnOneConsultationEMailToDoctor = async (
   meetingLink: string
 ) => {
   try {
-   
+    
     const mailTransporter = nodemailer.createTransport({
       host: "smtp0101.titan.email",
       port: 587,
