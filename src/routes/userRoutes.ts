@@ -27,6 +27,7 @@ router.get('/allergies/:patientID', userCtrl.getAllergies);
 
 
 router.get('/patients', auth, userCtrl.getAllPatients);
+router.post('/contact-us',  userCtrl.contactUs);
 
 
 

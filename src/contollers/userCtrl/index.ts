@@ -2,6 +2,8 @@ import { Request, response, Response, NextFunction } from "express";
 import { IReqAuth } from "../../types/express";
 import Users from "../../models/userModel";
 import { pagination } from "../../utilities/utils";
+import ContactUs from "../../models/contactusModel";
+import { validEmail } from "../../middleware/validations/authValidations";
 
 interface IAllergy {
   name: string;
@@ -299,6 +301,24 @@ const userCtrl = {
     }
   },
 
+  contactUs: async (req: IReqAuth, res: Response) => {
+
+    const { firstName, lastName, email, message } = req.body;
+    if ( !email || !validEmail(email) || !message) {
+      return res.status(400).json({
+        message: "email and message fields are required.",
+      });
+    }
+
+    const data = new ContactUs({ firstName, lastName, email, message });
+
+    await data.save();
+
+    return res.status(200).json({
+      message: "Successful",
+      data
+    })
+  },
   example: async (req: IReqAuth, res: Response) => {},
 };
 
