@@ -18,7 +18,6 @@ if (!URI) {
 
 ExpressApp(app);
 
-// Socket.io
 
 const httpServer = createServer(app);
 export const io = new Server(httpServer, {
@@ -30,7 +29,6 @@ export const io = new Server(httpServer, {
 
 // Handle Socket Connections
 io.on("connection", (socket: Socket) => {
-  // console.log(`Client connected: ${socket.id}`);
     SocketServer(socket, io);
 });
 

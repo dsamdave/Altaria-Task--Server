@@ -3,37 +3,28 @@ import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import routes from "../routes";
-import passport from 'passport';
 
-// Import the passport configuration
-import '../config/passport';
+
 import { sendOTPToEmail, SendTestEmail } from "../utilities/notificationUtility";
 
 export default async (app: Application) => {
   // Middleware
-  app.use(cors()); // Enable CORS for all origins
+  app.use(cors());  
 
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));
 
   app.use(morgan("dev"));
   app.use(cookieParser());
-  app.use(passport.initialize());
+
 
   // Routes
   app.use("/api", routes);
-  app.get("/api/test-email", async (req, res)=>{
-    console.log("entered")
-    await sendOTPToEmail("davidsampson.ud@gmail.com", "7890")
-    res.status(200).json({
-      message: "Email Sent Successfully"
-    });
-  })
 
   app.get("/api", (req, res) => {
     res.status(200).json({
-      message: "Welcome to Med-Tele Healthcare server",
-      "The Med-Tele Healthcare-api": "A Healthcare Application",
+      message: "Welcome to Ourserver",
+      "Example": "Server",
     });
   });
 

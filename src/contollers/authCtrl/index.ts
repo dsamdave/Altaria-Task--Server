@@ -3,20 +3,15 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 import Users, { IUser } from "../../models/userModel";
-import RefreshToken from "../../models/refreshToken";
 
 import { IReqAuth } from "../../types/express";
 import { generateTokens } from "../../utilities/tokenUtils";
 import {
   generateOTP,
-  sendOneOnOneConsultationEMailToDoctor,
-  sendOneOnOneConsultationEMailToUser,
   sendOTPToEmail,
 } from "../../utilities/notificationUtility";
 import { hashPassword } from "../../utilities/passwordUtility";
-import { generateUniquePatientID } from "../../utilities/utils";
 import crypto from "crypto";
-import { createNotification } from "../../helpers/notification";
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
@@ -41,7 +36,7 @@ const authCtrl = {
           .json({ message: "User account already exists." });
       }
 
-      const patientID = await generateUniquePatientID();
+      // const patientID = await generateUniquePatientID();
 
       const hashedPassword = await hashPassword(password, 12);
 
@@ -50,7 +45,7 @@ const authCtrl = {
 
       const user: IUser = new Users({
         email,
-        patientID,
+        // patientID,
         phoneNumber,
         password: hashedPassword,
         country,
@@ -103,14 +98,7 @@ const authCtrl = {
       user.otpExpires = undefined;
       await user.save();
 
-       await createNotification({
-        title: "Account verified",
-        message: "Congratulations, your account has been verified.",
-        type: "alert",
-        recipientId: req.user?.id,
-        recipientRole: "patient",
-        data: {},
-      });
+
 
       return res.status(200).json({ message: "Successful" });
 
@@ -158,53 +146,53 @@ const authCtrl = {
     }
   },
 
-  refreshToken: async (req: IReqAuth, res: Response, next: NextFunction) => {
-    const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
+  // refreshToken: async (req: IReqAuth, res: Response, next: NextFunction) => {
+  //   const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
-    if (!refreshToken) {
-      return res.status(403).json({ message: "Refresh Token is required!" });
-    }
+  //   if (!refreshToken) {
+  //     return res.status(403).json({ message: "Refresh Token is required!" });
+  //   }
 
-    try {
-      const decoded = jwt.verify(
-        refreshToken,
-        process.env.JWT_REFRESH_SECRET!
-      ) as { id: string };
-      const existingToken = await RefreshToken.findOne({ token: refreshToken });
+  //   try {
+  //     const decoded = jwt.verify(
+  //       refreshToken,
+  //       process.env.JWT_REFRESH_SECRET!
+  //     ) as { id: string };
+  //     const existingToken = await RefreshToken.findOne({ token: refreshToken });
 
-      if (!existingToken || existingToken.expiryDate < new Date()) {
-        return res.status(403).json({ message: "Refresh Token is not valid!" });
-      }
+  //     if (!existingToken || existingToken.expiryDate < new Date()) {
+  //       return res.status(403).json({ message: "Refresh Token is not valid!" });
+  //     }
 
-      const user = await Users.findById(decoded.id);
-      if (!user) {
-        return res.status(403).json({ message: "User not found!" });
-      }
+  //     const user = await Users.findById(decoded.id);
+  //     if (!user) {
+  //       return res.status(403).json({ message: "User not found!" });
+  //     }
 
-      const { accessToken, refreshToken: newRefreshToken } =
-        await generateTokens(user, res);
+  //     const { accessToken, refreshToken: newRefreshToken } =
+  //       await generateTokens(user, res);
 
-      existingToken.token = newRefreshToken;
-      existingToken.expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-      await existingToken.save();
+  //     existingToken.token = newRefreshToken;
+  //     existingToken.expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+  //     await existingToken.save();
 
-      if (req.body.isMobile) {
-        res.status(200).json({
-          message: "Successful",
-          accessToken,
-          refreshToken: newRefreshToken,
-        });
-      } else {
-        res.status(200).json({
-          message: "Successful",
-          accessToken,
-          refreshToken: newRefreshToken,
-        });
-      }
-    } catch (err: any) {
-      res.status(500).json({ message: "Server error.", error: err.message });
-    }
-  },
+  //     if (req.body.isMobile) {
+  //       res.status(200).json({
+  //         message: "Successful",
+  //         accessToken,
+  //         refreshToken: newRefreshToken,
+  //       });
+  //     } else {
+  //       res.status(200).json({
+  //         message: "Successful",
+  //         accessToken,
+  //         refreshToken: newRefreshToken,
+  //       });
+  //     }
+  //   } catch (err: any) {
+  //     res.status(500).json({ message: "Server error.", error: err.message });
+  //   }
+  // },
 
   requestOTP: async (req: IReqAuth, res: Response, next: NextFunction) => {
     try {
@@ -360,14 +348,7 @@ const authCtrl = {
       user.otpExpires = undefined;
       await user.save();
 
-      await createNotification({
-        title: "Account Password Reset",
-        message: "Your account password has been changed.",
-        type: "alert",
-        recipientId: req.user?.id,
-        recipientRole: "patient",
-        data: {},
-      });
+   
 
       res.status(201).json({
         message: "Successful",
@@ -456,14 +437,7 @@ const authCtrl = {
         { new: true }
       );
 
-      await createNotification({
-        title: "Account Bio Update",
-        message: "Your account profile was updated.",
-        type: "alert",
-        recipientId: req.user?.id,
-        recipientRole: "patient",
-        data: {},
-      });
+     
 
       return res.status(200).json({
         message: "Successful",
@@ -539,34 +513,11 @@ const authCtrl = {
 
   test: async (req: IReqAuth, res: Response, next: NextFunction) => {
     try {
-      // const { to } = req.body;
-
-      // const otp = generateOTP();
-
-      // await sendOTPSMS(to, otp)
-
-      await sendOneOnOneConsultationEMailToUser(
-        "davidsampson.ud@gmail.com",
-        "David",
-        "ExpatDoc Online",
-        "2024-10-30T00:00:00.000Z",
-        "10:30 AM",
-        15,
-        "https://zoom.us/j/123456789"
-      );
-
-      await sendOneOnOneConsultationEMailToDoctor(
-        "davidsampson.ud@gmail.com",
-        "David",
-        "ExpatDoc Online",
-        "2024-10-30T00:00:00.000Z",
-        "10:30 AM",
-        15,
-        "https://zoom.us/j/123456789"
-      );
+      const { email } = req.body;
 
       res.status(201).json({
         message: "Email sent successfully.",
+        email
       });
     } catch (err: any) {
       res.status(500).json({ message: "Server error.", error: err.message });
