@@ -10,7 +10,9 @@
     "pretty": true,
     "lib": ["es2015"],
     "sourceMap": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
   },
   "$schema": "https://json.schemastore.org/tsconfig",
   "display": "Recommended",
