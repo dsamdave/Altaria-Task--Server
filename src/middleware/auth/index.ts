@@ -1,6 +1,6 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import Users, { IUser } from '../../models/userModel';
+import Users  from '../../models/userModel';
 import { IReqAuth } from '../../types/express';
 
 const auth = async (req: IReqAuth, res: Response, next: NextFunction) => {
@@ -27,7 +27,12 @@ const auth = async (req: IReqAuth, res: Response, next: NextFunction) => {
     }
 
     next();
-  } catch (err) {
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(error.message); // Safely access the error message
+    } else {
+      console.log("An unknown error occurred.");
+    }
     return res.status(401).json({ message: 'Unauthorized Access' });
   }
 };

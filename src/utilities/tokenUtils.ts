@@ -1,8 +1,6 @@
 import jwt from "jsonwebtoken";
-import crypto from "crypto";
 
 import { Response } from "express";
-// import RefreshToken from "../models/refreshToken";
 import { IUser } from "../models/userModel";
 
 export const generateTokens = async (
@@ -20,30 +18,12 @@ export const generateTokens = async (
     { expiresIn: "7d" }
   );
 
-  // Check if a refresh token already exists for the user
-  // const existingToken = await RefreshToken.findOne({ userId: user._id });
-
-  // if (existingToken) {
-
-  //   existingToken.token = refreshToken;
-  //   existingToken.expiryDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
-  //   await existingToken.save();
-  // } else {
-
-  //   await new RefreshToken({
-  //     userID: user._id,
-  //     token: refreshToken,
-  //     expiryDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
-  //   }).save();
-  // }
-
-  // Set cookies for web applications
 
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production", // Ensure secure cookies in production
+      secure: process.env.NODE_ENV === "production",  
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000, // 15 minutes
+      maxAge: 15 * 60 * 1000,  
     });
 
     res.cookie("refreshToken", refreshToken, {

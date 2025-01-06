@@ -1,5 +1,4 @@
-import { Request, response, Response } from "express";
-import Users from "../models/userModel"
+import { Request  } from "express";
 
 export const pagination = (req: Request) => {
   const page = Number(req.query.page) * 1 || 1;

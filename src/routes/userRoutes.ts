@@ -3,14 +3,14 @@
 
 
 import express from 'express'
-import auth from '../middleware/auth'
 import authCtrl from '../contollers/authCtrl';
+// import auth from '../middleware/auth'
 
 
 const router = express.Router()
 
 
-router.post('/contact-us',  authCtrl.test);
+router.post('/example',  authCtrl.example);
 
 
 

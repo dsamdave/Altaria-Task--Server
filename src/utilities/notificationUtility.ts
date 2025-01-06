@@ -5,16 +5,16 @@ const {
   TWILIO_SID,
   TWILIO_AUTH_TOKEN,
   TWILIO_PHONE_NUMBER,
-  ADMIN_EMAIL,
-  ADMIN_EMAIL_PASSWORD,
+  // ADMIN_EMAIL,
+  // ADMIN_EMAIL_PASSWORD,
   BLACKNIGHT_EMAIL,
   BLACKNIGHT_EMAIL_PASSWORD,
 } = process.env;
 
-const auth = {
-  user: `${ADMIN_EMAIL}`,
-  pass: `${ADMIN_EMAIL_PASSWORD}`,
-};
+// const auth = {
+//   user: `${ADMIN_EMAIL}`,
+//   pass: `${ADMIN_EMAIL_PASSWORD}`,
+// };
 
 export function generateOTP(length: number = 4, expiresInMinutes: number = 10) {
   const digits = "0123456789";
@@ -40,7 +40,7 @@ export const sendOTPEMail = async (userEmail: string, otp: string) => {
       },
     });
 
-    let mailDetails = {
+    const mailDetails = {
       from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
       to: `${userEmail}`,
       subject: `Password Reset OTP`,
@@ -58,9 +58,9 @@ export const sendOTPEMail = async (userEmail: string, otp: string) => {
                 `,
     };
 
-    const result = await mailTransporter.sendMail(mailDetails);
+      await mailTransporter.sendMail(mailDetails);
     return "Email sent successfully";
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.log(error);
   }
 };
@@ -126,45 +126,16 @@ export const sendOTPToEmail = async (
                 `,
   };
 
-  const result = await mailTransporter.sendMail(mailOptions);
+    await mailTransporter.sendMail(mailOptions);
   
-} catch (error: any) {
-  console.log(error);
+} catch (error: unknown) {
+  if (error instanceof Error) {
+    console.log(error.message); // Safely access the error message
+  } else {
+    console.log("An unknown error occurred.");
+  }
 }
 };
 
 
-export const SendTestEmail = async (userEmail: string) => {
-  try {
-    const mailTransporter = nodemailer.createTransport({
-      host: "smtp0101.titan.email",
-      port: 587,
-      auth: {
-        user: BLACKNIGHT_EMAIL,
-        pass: BLACKNIGHT_EMAIL_PASSWORD,
-      },
-    });
 
-    let mailDetails = {
-      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
-      to: userEmail,
-      subject: `Test Email`,
-      html: `
-            <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
-            <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">This is a test email</h2>
-
-            <p>Your OTP for password reset is: <strong>1234567890</strong>. It is valid for 10 minutes.</p>
-
-            <h3 style="margin-top: 50px;">Med-Tele Healthcare Admin</h3>
-            </div>
-            `,
-    };
-
-    // Send the email
-    const result = await mailTransporter.sendMail(mailDetails);
-    return "Email sent successfully";
-  } catch (error: any) {
-    console.error("Error sending email:", error.message);
-    throw new Error("Failed to send email");
-  }
-};

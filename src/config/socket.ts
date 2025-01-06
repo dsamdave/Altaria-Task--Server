@@ -1,8 +1,6 @@
 import { Socket, Server } from "socket.io";
 // import { IUser } from './interface';
-import { io } from "../index";
 
-import { startOfWeek, isSameWeek } from "date-fns";
 
 export interface ISocketUser {
   id: string;
@@ -10,17 +8,17 @@ export interface ISocketUser {
 }
 
 // Manage connected clients
-const clients = new Map<string, Socket>();
+// const clients = new Map<string, Socket>();
 
 // Add client to the set
-const addClient = (socket: Socket) => {
-  clients.set(socket.id, socket);
-};
+// const addClient = (socket: Socket) => {
+//   clients.set(socket.id, socket);
+// };
 
 // Remove client from the set
-const removeClient = (socket: Socket) => {
-  clients.delete(socket.id);
-};
+// const removeClient = (socket: Socket) => {
+//   clients.delete(socket.id);
+// };
 
 export const SocketServer = (socket: Socket, io: Server) => {
   console.log(`User connected: ${socket.id}`);

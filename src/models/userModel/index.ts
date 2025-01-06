@@ -1,5 +1,4 @@
-import mongoose, { Document, Schema, CallbackError } from 'mongoose';
-import bcrypt from 'bcryptjs';
+import mongoose, { Document, Schema  } from 'mongoose';
 import { numberDefault, stringDefault } from '../../types/schemaTypes';
 
 export interface IUser extends Document {
