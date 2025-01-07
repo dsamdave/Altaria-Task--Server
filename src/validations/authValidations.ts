@@ -53,8 +53,6 @@ export const validateLogin = async (req: Request, res: Response, next: NextFunct
     next();
   }
 
-  
-
 
 export const validateResetPasswordMobile = async (
   req: Request,
@@ -141,7 +139,6 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
   
     next();
   }
-
 
 
   export const validateOTP = async (req: Request, res: Response, next: NextFunction) => {

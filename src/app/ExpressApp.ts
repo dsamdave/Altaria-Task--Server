@@ -28,7 +28,8 @@ export default async (app: Application) => {
 
   // 404 Error handler
   app.use((req: Request, res: Response ) => {
-    res.status(404).json({ message: "Sorry, this endpoint does not exist yet!" });
+    res.status(404).json({ status: false, message: "Sorry, this endpoint does not exist yet!", data: null });
+
   });
 
   return app;

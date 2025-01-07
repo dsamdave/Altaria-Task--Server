@@ -30,7 +30,6 @@ export function generateOTP(length: number = 4, expiresInMinutes: number = 10) {
 
 export const sendOTPEMail = async (userEmail: string, otp: string) => {
   try {
-
     const mailTransporter = nodemailer.createTransport({
       host: "smtp0101.titan.email",
       port: 587,
@@ -58,7 +57,7 @@ export const sendOTPEMail = async (userEmail: string, otp: string) => {
                 `,
     };
 
-      await mailTransporter.sendMail(mailDetails);
+    await mailTransporter.sendMail(mailDetails);
     return "Email sent successfully";
   } catch (error: unknown) {
     console.log(error);
@@ -96,23 +95,21 @@ export const sendOTPToEmail = async (
   to: string,
   otp: string
 ): Promise<void> => {
+  try {
+    const mailTransporter = nodemailer.createTransport({
+      host: "smtp0101.titan.email",
+      port: 587,
+      auth: {
+        user: BLACKNIGHT_EMAIL,
+        pass: BLACKNIGHT_EMAIL_PASSWORD,
+      },
+    });
 
-  try{
- 
-  const mailTransporter = nodemailer.createTransport({
-    host: "smtp0101.titan.email",
-    port: 587,
-    auth: {
-      user: BLACKNIGHT_EMAIL,
-      pass: BLACKNIGHT_EMAIL_PASSWORD,
-    },
-  });
-
-  const mailOptions = {
-    from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
-    to,
-    subject: "Your OTP",
-    html: `
+    const mailOptions = {
+      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
+      to,
+      subject: "Your OTP",
+      html: `
             <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
             <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">Your OTP</h2>
 
@@ -124,18 +121,14 @@ export const sendOTPToEmail = async (
             <h3 style="margin-top: 50px;">Med-Tele Healthcare Admin</h3>
             
                 `,
-  };
+    };
 
     await mailTransporter.sendMail(mailOptions);
-  
-} catch (error: unknown) {
-  if (error instanceof Error) {
-    console.log(error.message); // Safely access the error message
-  } else {
-    console.log("An unknown error occurred.");
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(error.message);
+    } else {
+      console.log("An unknown error occurred.");
+    }
   }
-}
 };
-
-
-

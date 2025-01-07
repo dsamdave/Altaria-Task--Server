@@ -1,14 +1,22 @@
 import { Request, Response } from "express";
-import { handleServerError } from "../../utilities/helpers/responseHelpers";
+import {
+  handleServerError,
+  sendResponse,
+} from "../../utilities/helpers/responseHelpers";
 
 const authCtrl = {
   example: async (req: Request, res: Response) => {
     try {
-      res.status(201).json({
-        message: "User registered successfully.",
+      
+
+      sendResponse(res, {
+        statusCode: 200,
+        status: true,
+        message: "Seeker terms payment request successfully set",
+        data: null,
       });
     } catch (error: unknown) {
-        handleServerError(res, error);
+      handleServerError(res, error);
     }
   },
 };
