@@ -21,8 +21,10 @@ export default async (app: Application) => {
 
   app.get("/api", (req, res) => {
     res.status(200).json({
+      status: true,
       message: "Welcome to Leira Health server",
       "The Leira Healthcare-api": "A Healthcare Application",
+      data: null
     });
   });
 
