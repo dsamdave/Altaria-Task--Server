@@ -29,7 +29,7 @@ export const validateRegister = async (
     errors.push("Please password must contain a number");
   }
 
-  if (errors.length > 0) return res.status(400).json({ message: errors });
+  if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
 
   next();
 };
@@ -48,35 +48,10 @@ export const validateLogin = async (req: Request, res: Response, next: NextFunct
       errors.push("Please enter your password.")
     }
   
-    if(errors.length > 0) return res.status(400).json({message: errors})
+    if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
   
     next();
   }
-
-
-export const validateResetPasswordMobile = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { identifier, password  } = req.body;
-
-  const errors = [];
-
-  if(!identifier){
-    errors.push("Please enter your email or phone number.")
-  }
-
-  if (!password) {
-    errors.push("Please enter a password.");
-  } else if (password.length < 6) {
-    errors.push("Please password must be 6 chars.");
-  }
-
-  if (errors.length > 0) return res.status(400).json({ message: errors });
-
-  next();
-};
 
 
 export const validateResetPassword = async (
@@ -84,16 +59,12 @@ export const validateResetPassword = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { identifier, password, otp } = req.body;
+  const { identifier, password } = req.body;
 
   const errors = [];
 
   if(!identifier){
     errors.push("Please enter your email or phone number.")
-  }
-
-  if(!otp){
-    errors.push("Please enter your otp.")
   }
 
   if (!password) {
@@ -102,7 +73,7 @@ export const validateResetPassword = async (
     errors.push("Please password must be 6 chars.");
   }
 
-  if (errors.length > 0) return res.status(400).json({ message: errors });
+  if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
 
   next();
 };
@@ -117,7 +88,7 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
       errors.push("Please enter your email or phone number.")
     }
   
-    if(errors.length > 0) return res.status(400).json({message: errors})
+    if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
   
     next();
   }
@@ -141,20 +112,17 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
   }
 
 
-  export const validateOTP = async (req: Request, res: Response, next: NextFunction) => {
-    const { identifier, otp } = req.body
+  export const validateVerifyOTP = async (req: Request, res: Response, next: NextFunction) => {
+    const { otp } = req.body
   
     const errors = [];
-  
-    if(!identifier){
-      errors.push("Please enter your email or phone number.")
-    }
   
     if(!otp){
       errors.push("Please enter your otp.")
     }
   
-    if(errors.length > 0) return res.status(400).json({message: errors})
+    if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
+
   
     next();
   }
@@ -170,7 +138,7 @@ export const validateForgotPassword = async (req: Request, res: Response, next: 
     }
 
   
-    if(errors.length > 0) return res.status(400).json({message: errors})
+    if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
   
     next();
   }

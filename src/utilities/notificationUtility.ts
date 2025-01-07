@@ -1,20 +1,84 @@
 import nodemailer from "nodemailer";
-import twilio from "twilio";
+// import twilio from "twilio";
 
-const {
-  TWILIO_SID,
-  TWILIO_AUTH_TOKEN,
-  TWILIO_PHONE_NUMBER,
-  // ADMIN_EMAIL,
-  // ADMIN_EMAIL_PASSWORD,
-  BLACKNIGHT_EMAIL,
-  BLACKNIGHT_EMAIL_PASSWORD,
-} = process.env;
+// const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
 
-// const auth = {
-//   user: `${ADMIN_EMAIL}`,
-//   pass: `${ADMIN_EMAIL_PASSWORD}`,
+
+// Configure Nodemailer transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail', 
+  
+  auth: {
+    user: process.env.EMAIL_USERNAME,   
+    pass: process.env.EMAIL_PASSWORD,  
+  },
+});
+
+
+
+export const sendOTP = async (destination: string, otp: string): Promise<void> => {
+  try {
+    if (destination.includes('@')) {
+      // Send OTP via email
+      await transporter.sendMail({
+        from: `"Leira Health Support" <${process.env.EMAIL_USERNAME}>`,
+        to: destination,
+        subject: 'Your Verification Code',
+        text: `Your verification code is ${otp}. It will expire in 10 minutes.`,
+      });
+      console.log(`OTP sent to email: ${destination}`);
+
+    } else {
+      // Send OTP via SMS
+      throw new Error('Please enter an email to get OTP');
+
+    }
+
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log(error.message);
+    } else {
+      console.log("An unknown error occurred.");
+    }
+    throw new Error('Failed to send OTP');
+  }
+};
+
+
+// Uncomment later when there is Twilio Details
+// export const sendOTP = async (destination: string, otp: string): Promise<void> => {
+//   try {
+//     if (destination.includes('@')) {
+//       // Send OTP via email
+//       await transporter.sendMail({
+//         from: `"YourApp Support" <${process.env.EMAIL_USERNAME}>`,
+//         to: destination,
+//         subject: 'Your Verification Code',
+//         text: `Your verification code is ${otp}. It will expire in 10 minutes.`,
+//       });
+//       console.log(`OTP sent to email: ${destination}`);
+
+//     } else {
+//       // Send OTP via SMS
+//       await twilioClient.messages.create({
+//         body: `Your verification code is ${otp}. It will expire in 10 minutes.`,
+//         from: process.env.TWILIO_PHONE_NUMBER,
+//         to: destination,
+//       });
+//       console.log(`OTP sent to phone: ${destination}`);
+//     }
+
+//   } catch (error: unknown) {
+//     if (error instanceof Error) {
+//       console.log(error.message);
+//     } else {
+//       console.log("An unknown error occurred.");
+//     }
+//     throw new Error('Failed to send OTP');
+//   }
 // };
+
+
 
 export function generateOTP(length: number = 4, expiresInMinutes: number = 10) {
   const digits = "0123456789";
@@ -23,112 +87,7 @@ export function generateOTP(length: number = 4, expiresInMinutes: number = 10) {
     otp += digits[Math.floor(Math.random() * digits.length)];
   }
 
-  const otpExpires = new Date(Date.now() + expiresInMinutes * 60 * 1000);
+  const otpExpiry = new Date(Date.now() + expiresInMinutes * 60 * 1000);
 
-  return { otp, otpExpires };
+  return { otp, otpExpiry };
 }
-
-export const sendOTPEMail = async (userEmail: string, otp: string) => {
-  try {
-    const mailTransporter = nodemailer.createTransport({
-      host: "smtp0101.titan.email",
-      port: 587,
-      auth: {
-        user: BLACKNIGHT_EMAIL,
-        pass: BLACKNIGHT_EMAIL_PASSWORD,
-      },
-    });
-
-    const mailDetails = {
-      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
-      to: `${userEmail}`,
-      subject: `Password Reset OTP`,
-      html: `
-            <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
-            <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">Your OTP.</h2>
-
-            <p >Your OTP for password reset is: ${otp}. It is valid for 10 minutes.</p>
-            
-          
-            
-
-            <h3 style="margin-top: 50px;">Med-Tele Healthcare Admin</h3>
-            
-                `,
-    };
-
-    await mailTransporter.sendMail(mailDetails);
-    return "Email sent successfully";
-  } catch (error: unknown) {
-    console.log(error);
-  }
-};
-
-export const sendOTPSMS = async (
-  phoneNumber: string,
-  otp: string
-): Promise<string> => {
-  try {
-    if (!TWILIO_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
-      throw new Error(
-        "Twilio credentials are not set properly in environment variables."
-      );
-    }
-
-    const twilioClient = twilio(TWILIO_SID, TWILIO_AUTH_TOKEN);
-
-    const message = await twilioClient.messages.create({
-      body: `Your OTP is: ${otp}. It is valid for 10 minutes.`,
-      from: TWILIO_PHONE_NUMBER,
-      to: phoneNumber,
-    });
-
-    console.log("Message SID:", message.sid);
-    return "SMS sent successfully";
-  } catch (error) {
-    console.error("Failed to send SMS:", error);
-    throw new Error("Unable to send SMS. Please try again later.");
-  }
-};
-
-export const sendOTPToEmail = async (
-  to: string,
-  otp: string
-): Promise<void> => {
-  try {
-    const mailTransporter = nodemailer.createTransport({
-      host: "smtp0101.titan.email",
-      port: 587,
-      auth: {
-        user: BLACKNIGHT_EMAIL,
-        pass: BLACKNIGHT_EMAIL_PASSWORD,
-      },
-    });
-
-    const mailOptions = {
-      from: `"ExpatDoctor Online" <${BLACKNIGHT_EMAIL}>`,
-      to,
-      subject: "Your OTP",
-      html: `
-            <div style="max-width: 700px; margin:auto; border: 10px solid #ddd; padding: 50px 20px; font-size: 110%;">
-            <h2 style="text-align: center; text-transform: uppercase;color: #4A90E2">Your OTP</h2>
-
-            <p >Your OTP is: ${otp}. It is valid for 10 minutes.</p>
-            
-          
-            
-
-            <h3 style="margin-top: 50px;">Med-Tele Healthcare Admin</h3>
-            
-                `,
-    };
-
-    await mailTransporter.sendMail(mailOptions);
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.log(error.message);
-    } else {
-      console.log("An unknown error occurred.");
-    }
-  }
-};
