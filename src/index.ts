@@ -4,10 +4,6 @@ import express from "express";
 import ExpressApp from "./app/ExpressApp";
 import mongoose from "mongoose";
 
-import { createServer } from "http";
-import { Server, Socket } from "socket.io";
-import { SocketServer } from "./config/socket";
-
 
 const app = express();
 
@@ -19,21 +15,6 @@ if (!URI) {
 
 ExpressApp(app);
 
-
-const httpServer = createServer(app);
-export const io = new Server(httpServer, {
-  cors: {
-    origin: "*",
-    methods: ['GET', 'POST'],
-  },
-});
-
-// Handle Socket Connections
-io.on("connection", (socket: Socket) => {
-    SocketServer(socket, io);
-});
-
-// server listenning
 const PORT = process.env.PORT || 8082;
 
 const connectDB = async () => {
@@ -41,7 +22,7 @@ const connectDB = async () => {
     await mongoose.connect(URI, {});
     console.log("MongoDB Connected...");
 
-    httpServer.listen(PORT, () => {
+    app.listen(PORT, () => {
       console.log(`Server listening on port: ${PORT}`);
     });
   } catch (error) {

@@ -54,95 +54,30 @@ export const validateLogin = async (req: Request, res: Response, next: NextFunct
   }
 
 
-export const validateResetPassword = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { identifier, password } = req.body;
-
-  const errors = [];
-
-  if(!identifier){
-    errors.push("Please enter your email or phone number.")
-  }
-
-  if (!password) {
-    errors.push("Please enter a password.");
-  } else if (password.length < 6) {
-    errors.push("Please password must be 6 chars.");
-  }
-
-  if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
-
-  next();
-};
-
-
-export const validateForgotPassword = async (req: Request, res: Response, next: NextFunction) => {
-    const { identifier } = req.body
+export const validateAddEvents = async (req: Request, res: Response, next: NextFunction) => {
+    const { name, type, address, latitude, longitude } = req.body
   
     const errors = [];
   
-    if(!identifier){
-      errors.push("Please enter your email or phone number.")
+    if(!name){
+      errors.push("Please event name.")
+    }
+    if(!type){
+      errors.push("Please event type.")
+    }
+    if(!address){
+      errors.push("Please event type.")
+    }
+    if(!latitude || !longitude){
+      errors.push("Please event coordinates.")
     }
   
-    if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
-  
-    next();
-  }
-
-
-  export const validateDeleteUserAccount = async (req: Request, res: Response, next: NextFunction) => {
-
-    const { deletePhrase } = req.body
-  
-    const errors = [];
-  
-    if(!deletePhrase){
-      errors.push("Invalid Authorization.")
-    }else if(deletePhrase !== "delete my account"){
-      errors.push("Invalid Authorization.")
-    }
-  
-    if(errors.length > 0) return res.status(400).json({message: errors})
-  
-    next();
-  }
-
-
-  export const validateVerifyOTP = async (req: Request, res: Response, next: NextFunction) => {
-    const { otp } = req.body
-  
-    const errors = [];
-  
-    if(!otp){
-      errors.push("Please enter your otp.")
-    }
-  
-    if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
-
-  
-    next();
-  }
-
-
-  export const validateRequestOTP = async (req: Request, res: Response, next: NextFunction) => {
-    const { identifier } = req.body
-  
-    const errors = [];
-  
-    if(!identifier){
-      errors.push("Please enter your email or phone number.")
-    }
 
   
     if(errors.length > 0) return res.status(400).json({status: false, message: errors, data: null})
   
     next();
   }
-
 
 
 
