@@ -9,10 +9,10 @@ import { generateTokens } from "../../utilities/tokenUtils";
 
 const authCtrl = {
   register: async (req: Request, res: Response) => {
-    const { email, phoneNumber, password } = req.body;
+    const { name, email, phoneNumber, password } = req.body;
 
     try {
-      await authService.registerUser({ email, phoneNumber, password });
+      await authService.registerUser({ name, email, phoneNumber, password });
 
       sendResponse(res, {
         statusCode: 201,

@@ -4,6 +4,7 @@ import { reqString, reqUniqueString } from "../../types/schemaTypes";
 
 export interface IUser extends Document {
   id: string;
+  name?: string;
   email?: string;
   phoneNumber?: string;
   password: string;
@@ -15,6 +16,7 @@ export interface IUser extends Document {
 
 const userSchema = new Schema(
   {
+    name: {type: String, default: ""},
     email: reqUniqueString,
     phoneNumber: reqUniqueString,
     password: reqString,

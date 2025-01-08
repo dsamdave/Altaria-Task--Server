@@ -8,6 +8,7 @@ import {
 const authService = {
 
   registerUser: async ({
+    name,
     email,
     phoneNumber,
     password,
@@ -21,7 +22,7 @@ const authService = {
       throw new Error("User account already exists");
     }
 
-    const user = new Users({ email, phoneNumber, password });
+    const user = new Users({ name, email, phoneNumber, password });
     await user.save();
 
     return user;
