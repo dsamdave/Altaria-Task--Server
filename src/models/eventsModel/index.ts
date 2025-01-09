@@ -17,9 +17,9 @@ const eventSchema = new Schema(
     type: reqString,
     address: reqString,
     coordinates: {
-      type: [Number], // Store coordinates as an array [longitude, latitude]
+      type: [Number], // [longitude, latitude]
       required: true,
-      index: '2dsphere', // Create a 2dsphere index for geospatial queries
+      index: '2dsphere',
     },
     description: reqString,
     dateTime: reqString,
