@@ -9,7 +9,7 @@ const router = express.Router()
 
 router.post('/event',  auth, validateAddEvents, eventCtrl.addEvent);
 router.post('/events',   eventCtrl.getEventsByLocation);
-router.post('/bookmark-event/:eventId',   auth, eventCtrl.bookmarkEvents);
+router.post('/bookmark-event',   auth, eventCtrl.bookmarkEvents);
 
 router.get('/bookmarked-events',   auth, eventCtrl.getBookmarked);
 

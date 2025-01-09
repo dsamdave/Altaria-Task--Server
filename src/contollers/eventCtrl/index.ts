@@ -59,7 +59,7 @@ const eventCtrl = {
     if (!req.user)
       return res.status(404).json({ message: "Invalid Authorization" });
 
-    const { eventId } = req.params;
+    const { eventId } = req.body;
 
     try {
       const user = await eventService.bookMarkEventService({
