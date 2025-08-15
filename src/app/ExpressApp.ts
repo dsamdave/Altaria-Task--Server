@@ -18,8 +18,8 @@ export default async (app: Application) => {
   app.get("/api", (req, res) => {
     res.status(200).json({
       status: true,
-      message: "Welcome to My Altaria server",
-      "The GPS location-api": "GPS location-based web application.",
+      message: "Welcome to My SmartHub server",
+      "The Student Pratice Server": "A Server for students to test their web application.",
       data: null,
     });
   });
